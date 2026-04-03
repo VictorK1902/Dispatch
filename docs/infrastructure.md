@@ -22,8 +22,8 @@ All Azure resources for the Job Dispatch Service, defined as Infrastructure-as-C
 | Key Vault | Standard | Stores ACS connection string |
 | Application Insights | - | Observability for API and Functions |
 | Log Analytics Workspace | - | Backing store for App Insights |
-| User-Assigned MI (Worker) | - | `func-dispatch-worker-uami`; application identity for Worker Function |
-| User-Assigned MI (DLQ Handler) | - | `func-dispatch-dlq-uami`; application identity for DLQ Handler Function |
+| User-Assigned MI (Worker) | - | `uami-dispatch-worker`; application identity for Worker Function |
+| User-Assigned MI (DLQ Handler) | - | `uami-dispatch-dlq`; application identity for DLQ Handler Function |
 
 # Managed Identity Role Assignments
 
@@ -34,12 +34,12 @@ User-assigned MIs are provisioned via Bicep (`Microsoft.ManagedIdentity/userAssi
 | App Service (system-assigned) | Service Bus | Azure Service Bus Data Sender |
 | App Service (system-assigned) | Azure SQL | db_datareader, db_datawriter |
 | App Service (system-assigned) | Key Vault | Key Vault Secrets User |
-| `func-dispatch-worker-uami` (user-assigned) | Service Bus | Azure Service Bus Data Receiver |
-| `func-dispatch-worker-uami` (user-assigned) | Azure SQL | db_datareader, db_datawriter |
-| `func-dispatch-worker-uami` (user-assigned) | Key Vault | Key Vault Secrets User |
-| `func-dispatch-dlq-uami` (user-assigned) | Service Bus | Azure Service Bus Data Receiver |
-| `func-dispatch-dlq-uami` (user-assigned) | Azure SQL | db_datareader, db_datawriter |
-| `func-dispatch-dlq-uami` (user-assigned) | Key Vault | Key Vault Secrets User |
+| `uami-dispatch-worker` (user-assigned) | Service Bus | Azure Service Bus Data Receiver |
+| `uami-dispatch-worker` (user-assigned) | Azure SQL | db_datareader, db_datawriter |
+| `uami-dispatch-worker` (user-assigned) | Key Vault | Key Vault Secrets User |
+| `uami-dispatch-dlq` (user-assigned) | Service Bus | Azure Service Bus Data Receiver |
+| `uami-dispatch-dlq` (user-assigned) | Azure SQL | db_datareader, db_datawriter |
+| `uami-dispatch-dlq` (user-assigned) | Key Vault | Key Vault Secrets User |
 
 # Entra ID App Registrations
 
