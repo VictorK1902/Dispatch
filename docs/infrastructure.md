@@ -11,7 +11,7 @@ All Azure resources for the Job Dispatch Service, defined as Infrastructure-as-C
 | App Service Plan | B1 | Hosts the Job Scheduling API |
 | App Service | - | Public Job Scheduling API |
 | Azure SQL Server | - | Logical server; parent of the SQL Database |
-| Azure SQL Database | Serverless / Standard S0 | Cost-efficient for demo |
+| Azure SQL Database | Serverless / Standard | Cost-efficient for demo |
 | Service Bus Namespace | Standard | Supports scheduled messages, DLQ, competing consumers |
 | Service Bus Queue | - | `jobs-queue`; main job queue |
 | Azure Function Plan (Worker) | Flex Consumption | One plan per Function App |
