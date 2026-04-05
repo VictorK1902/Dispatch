@@ -39,9 +39,8 @@ The Job Dispatch Service allows authorized clients to schedule future jobs via a
 |----------|-----------|
 | External client → API | Entra ID client credentials flow with JWT bearer token |
 | API → Service Bus | Managed Identity (system-assigned) |
-| Function → Azure SQL | Managed Identity (system-assigned) |
-| Function → ACS | Managed Identity (system-assigned) |
-| Secrets | Azure Key Vault |
+| Function → Azure SQL | Managed Identity (user-assigned) |
+| Function → ACS | Managed Identity (user-assigned) |
 
 # Observability
 

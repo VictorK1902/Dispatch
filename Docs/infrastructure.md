@@ -19,27 +19,26 @@ All Azure resources for the Job Dispatch Service, defined as Infrastructure-as-C
 | Azure Function Plan (DLQ Handler) | Flex Consumption | One plan per Function App |
 | Azure Function App (DLQ Handler) | - | Service Bus DLQ trigger |
 | Azure Communication Services | Free tier | Email sending (100/day) |
-| Key Vault | Standard | Stores ACS connection string |
 | Application Insights | - | Observability for API and Functions |
 | Log Analytics Workspace | - | Backing store for App Insights |
-| User-Assigned MI (Worker) | - | `uami-dispatch-worker`; application identity for Worker Function |
-| User-Assigned MI (DLQ Handler) | - | `uami-dispatch-dlq`; application identity for DLQ Handler Function |
+| User-Assigned MI (Worker) | - | `uami-dispatch-worker`; sole identity for Worker Function |
+| User-Assigned MI (DLQ Handler) | - | TBD; sole identity for DLQ Handler Function |
 
 # Managed Identity Role Assignments
 
-User-assigned MIs are provisioned via Bicep (`Microsoft.ManagedIdentity/userAssignedIdentities`) and assigned to each resource. App Service uses a system-assigned MI. SQL roles are not Azure RBAC — they are granted via T-SQL post-deployment. ACS does not support a scoped sender role; its connection string is stored in Key Vault and referenced via app settings.
+Each Function App uses a single user-assigned MI for all access (Storage, App Insights, Service Bus, SQL, ACS). System-assigned MI is disabled on Function Apps. App Service uses a system-assigned MI. SQL roles are not Azure RBAC — they are granted via T-SQL post-deployment (`CREATE USER [<identity-name>] FROM EXTERNAL PROVIDER`).
 
 | Identity | Resource | Role |
 |----------|----------|------|
 | App Service (system-assigned) | Service Bus | Azure Service Bus Data Sender |
 | App Service (system-assigned) | Azure SQL | db_datareader, db_datawriter |
-| App Service (system-assigned) | Key Vault | Key Vault Secrets User |
+| `uami-dispatch-worker` (user-assigned) | Storage Account | Storage Blob Data Owner (auto-assigned) |
+| `uami-dispatch-worker` (user-assigned) | Storage Blob Container | Storage Blob Data Contributor (auto-assigned) |
+| `uami-dispatch-worker` (user-assigned) | Application Insights | Monitoring Metrics Publisher (auto-assigned) |
 | `uami-dispatch-worker` (user-assigned) | Service Bus | Azure Service Bus Data Receiver |
-| `uami-dispatch-worker` (user-assigned) | Azure SQL | db_datareader, db_datawriter |
-| `uami-dispatch-worker` (user-assigned) | Key Vault | Key Vault Secrets User |
+| `uami-dispatch-worker` (user-assigned) | Azure SQL | db_datareader, db_datawriter (T-SQL) |
 | `uami-dispatch-dlq` (user-assigned) | Service Bus | Azure Service Bus Data Receiver |
-| `uami-dispatch-dlq` (user-assigned) | Azure SQL | db_datareader, db_datawriter |
-| `uami-dispatch-dlq` (user-assigned) | Key Vault | Key Vault Secrets User |
+| `uami-dispatch-dlq` (user-assigned) | Azure SQL | db_datareader, db_datawriter (T-SQL) |
 
 # Entra ID App Registrations
 
@@ -52,5 +51,5 @@ User-assigned MIs are provisioned via Bicep (`Microsoft.ManagedIdentity/userAssi
 
 - All resources in a single resource group: `rg-dispatch`
 - Location: `centralus`
-- Naming convention: `{resource-type}-dispatch-{qualifier}` (e.g., `func-dispatch-worker`, `func-dispatch-worker-uami`)
+- Naming convention: `{resource-type}-dispatch-{qualifier}` (e.g., `func-dispatch-worker`, `uami-dispatch-worker`)
 - IaC: Bicep preferred over ARM; Terraform is an alternative
