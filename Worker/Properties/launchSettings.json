@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "worker": {
+    "Worker": {
       "commandName": "Project",
       "commandLineArgs": "--port 7250",
       "launchBrowser": false
