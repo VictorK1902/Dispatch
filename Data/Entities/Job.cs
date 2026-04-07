@@ -14,10 +14,10 @@ public class Job
     [MaxLength(50)]
     public string Status { get; set; } = "Scheduled";
 
-    public DateTime ScheduledAt { get; set; }
+    public DateTimeOffset ScheduledAt { get; set; }
     public string DataPayload { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
     public long? ServiceBusSequenceNumber { get; set; }
 
     public JobModule JobModule { get; set; } = null!;

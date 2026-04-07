@@ -12,5 +12,5 @@ public class JobModule
     [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
 
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }

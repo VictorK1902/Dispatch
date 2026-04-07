@@ -13,7 +13,7 @@ Defines the predefined types of job the system can execute.
 | Id | int (PK) | |
 | Name | nvarchar(100) | e.g., `Weather Report`, `Stock Price Report` |
 | Description | nvarchar(500) | |
-| CreatedAt | datetime2 | |
+| CreatedAt | datetimeoffset | |
 
 ## `Job`
 
@@ -25,10 +25,10 @@ Represents a scheduled job submitted by a client.
 | ClientId | nvarchar(200) | Entra ID `appid` claim from JWT, stored as `ClientId` |
 | JobModuleId | int | FK to `JobModule.Id` |
 | Status | nvarchar(50) | `Scheduled`, `Running`, `Completed`, `Failed`, `Cancelled` |
-| ScheduledAt | datetime2 | When the job is scheduled to execute |
+| ScheduledAt | datetimeoffset | When the job is scheduled to execute |
 | DataPayload | nvarchar(max) | JSON serialized string format |
-| CreatedAt | datetime2 | |
-| UpdatedAt | datetime2 | |
+| CreatedAt | datetimeoffset | |
+| UpdatedAt | datetimeoffset | |
 | ServiceBusSequenceNumber | bigint (nullable) | Stored for cancellation/modification support |
 
 ## `Notification`
@@ -41,12 +41,11 @@ Records outbound emails sent for a job (success or failure).
 | JobId | uniqueidentifier | FK to `Job.Id` |
 | Type | nvarchar(50) | `Success`, `Failure` |
 | RecipientEmail | nvarchar(200) | |
-| SentAt | datetime2 | |
+| SentAt | datetimeoffset | |
 | AcsMessageId | nvarchar(200) | ACS tracking ID |
-| CreatedAt | datetime2 | |
+| CreatedAt | datetimeoffset | |
 
 # Notes
 
-- All datetime columns use UTC
 - `Job.Id` doubles as the Service Bus `CorrelationId` to link queue messages back to SQL records
 - Status transitions: `Scheduled` → `Running` → `Completed` or `Failed`; `Scheduled` → `Cancelled`

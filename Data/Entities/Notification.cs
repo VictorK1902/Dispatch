@@ -13,7 +13,7 @@ public class Notification
     [MaxLength(200)]
     public string RecipientEmail { get; set; } = string.Empty;
 
-    public DateTime SentAt { get; set; }
+    public DateTimeOffset SentAt { get; set; }
 
     [MaxLength(200)]
     public string AcsMessageId { get; set; } = string.Empty;

@@ -31,14 +31,14 @@ public class DispatchDbContext(DbContextOptions<DispatchDbContext> options) : Db
                 Id = 1,
                 Name = "Weather Report",
                 Description = "Return a weather report in terms of temperature",
-                CreatedAt = new DateTime(2026, 4, 6, 0, 0, 0, DateTimeKind.Utc)
+                CreatedAt = new DateTimeOffset(2026, 4, 6, 0, 0, 0, TimeSpan.FromHours(-5))
             },
             new JobModule
             {
                 Id = 2,
                 Name = "Stock Price Report",
                 Description = "Return a full monthly historical price of a stock symbol",
-                CreatedAt = new DateTime(2026, 4, 6, 0, 0, 0, DateTimeKind.Utc)
+                CreatedAt = new DateTimeOffset(2026, 4, 6, 0, 0, 0, TimeSpan.FromHours(-5))
             }
         );
     }
