@@ -24,5 +24,22 @@ public class DispatchDbContext(DbContextOptions<DispatchDbContext> options) : Db
                 .WithMany()
                 .HasForeignKey(e => e.JobId);
         });
+
+        modelBuilder.Entity<JobModule>().HasData(
+            new JobModule
+            {
+                Id = 1,
+                Name = "Weather Report",
+                Description = "Return a weather report in terms of temperature",
+                CreatedAt = new DateTime(2026, 4, 6, 0, 0, 0, DateTimeKind.Utc)
+            },
+            new JobModule
+            {
+                Id = 2,
+                Name = "Stock Price Report",
+                Description = "Return a full monthly historical price of a stock symbol",
+                CreatedAt = new DateTime(2026, 4, 6, 0, 0, 0, DateTimeKind.Utc)
+            }
+        );
     }
 }

@@ -17,7 +17,7 @@ All endpoints require:
 Authorization: Bearer <jwt>
 ```
 
-Token is obtained via Entra ID client credentials flow. The `appid` claim identifies the calling client and is stored on the job record.
+Token is obtained via Entra ID client credentials flow. The `appid` claim (from the JWT) identifies the calling client and is stored as `ClientId` on the job record.
 
 # Endpoints
 
@@ -104,10 +104,19 @@ Cancel a scheduled job. Only allowed if the job is still `Scheduled` and outside
 
 # Notes
 
-- Clients can only view/modify jobs they created (`appid` claim must match)
+- Clients can only view/modify jobs they created (JWT `appid` must match the job's `ClientId`)
 - `scheduledAt` must be UTC
 
 # Known Edge Cases
 
-## POST /jobs — Partial Failure (SQL succeeds, Service Bus enqueue fails)
-If the job record is written to SQL but the subsequent Service Bus enqueue fails, the job will be stuck in `Scheduled` status indefinitely with no corresponding message in the queue — it will never execute. The API returns `500` in this case. The production-grade fix is the outbox pattern (write a pending outbox entry to SQL in the same transaction; a background process publishes to Service Bus). For current scope: best effort — client should retry on `500`, and stuck `Scheduled` records can be detected via `GET /jobs/{jobId}`.
+## Partial Failure — SQL and Service Bus are not transactional
+
+Every write endpoint coordinates between SQL and Service Bus without a shared transaction. If one succeeds and the other fails, the system can enter an inconsistent state. The API returns `500` in all such cases.
+
+**POST /jobs** — SQL write succeeds, Service Bus enqueue fails. The job is stuck in `Scheduled` with no corresponding message — it will never execute.
+
+**PUT /jobs/{jobId}** — This performs a cancel-and-re-enqueue (Service Bus messages cannot be modified in place). If the cancel succeeds but the re-enqueue fails, the job record reflects the updated schedule but has no message in the queue. If the SQL update succeeds but the cancel fails, the original message is still live and may execute on the old schedule.
+
+**DELETE /jobs/{jobId}** — SQL is updated to `Cancelled` but `CancelScheduledMessageAsync` fails. The message is still live and will be delivered to the Worker. Mitigation: the Worker should check job status before executing and skip `Cancelled` jobs.
+
+**Production-grade fix:** outbox pattern — write a pending outbox entry to SQL in the same transaction; a background process publishes to Service Bus. **Current scope:** best effort — client should retry on `500`, and inconsistent records can be detected via `GET /jobs/{jobId}`.

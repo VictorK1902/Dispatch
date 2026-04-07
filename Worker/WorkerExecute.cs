@@ -4,7 +4,7 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
-namespace Dispatch.Worker;
+namespace OceanLight.Function;
 
 public class WorkerExecute
 {

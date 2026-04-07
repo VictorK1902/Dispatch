@@ -44,8 +44,9 @@ Each Function App uses a single user-assigned MI for all access (Storage, App In
 
 | Registration | Purpose |
 |-------------|---------|
-| `dispatch-api` | Represents the API; defines the `access_as_application` scope |
-| `dispatch-client-{name}` | One per authorized client; granted access to the API scope |
+| `dispatch-api` | Represents the API; defines the `Jobs.ReadWrite` app role |
+| `dispatch-client-test` | Test client; granted `Jobs.ReadWrite` with admin consent |
+| `dispatch-client-{name}` | One per additional authorized client; granted the app role |
 
 # Notes
 

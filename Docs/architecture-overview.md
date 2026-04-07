@@ -47,6 +47,15 @@ The Job Dispatch Service allows authorized clients to schedule future jobs via a
 - Application Insights attached to both App Service and Azure Functions
 - Structured logging throughout
 
+# Solution Structure
+
+| Project | Type | Responsibility | References |
+|---------|------|----------------|------------|
+| `Api/` | ASP.NET Core Web API | Accept and validate job requests, enqueue to Service Bus | Data, Contracts |
+| `Worker/` | Azure Function (Service Bus trigger) | Execute job module logic, send notifications | Data, Contracts |
+| `Data/` | Class library | EF Core DbContext, entities, migrations | — |
+| `Contracts/` | Class library | Shared job module input models (e.g., `WeatherReportInput`, `StockPriceReportInput`) | — |
+
 # Out of Scope
 
 - Custom job logic beyond predefined modules

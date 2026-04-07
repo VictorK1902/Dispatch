@@ -11,7 +11,7 @@ Defines the predefined types of job the system can execute.
 | Column | Type | Notes |
 |--------|------|-------|
 | Id | int (PK) | |
-| Name | nvarchar(100) | e.g., `Weather Check`, `SP500 Price Reminder` |
+| Name | nvarchar(100) | e.g., `Weather Report`, `Stock Price Report` |
 | Description | nvarchar(500) | |
 | CreatedAt | datetime2 | |
 
@@ -22,7 +22,7 @@ Represents a scheduled job submitted by a client.
 | Column | Type | Notes |
 |--------|------|-------|
 | Id | uniqueidentifier (PK) | Also used as `CorrelationId` on Service Bus message |
-| ClientId | nvarchar(200) | Entra ID `appid` claim from JWT |
+| ClientId | nvarchar(200) | Entra ID `appid` claim from JWT, stored as `ClientId` |
 | JobModuleId | int | FK to `JobModule.Id` |
 | Status | nvarchar(50) | `Scheduled`, `Running`, `Completed`, `Failed`, `Cancelled` |
 | ScheduledAt | datetime2 | When the job is scheduled to execute |
@@ -43,6 +43,7 @@ Records outbound emails sent for a job (success or failure).
 | RecipientEmail | nvarchar(200) | |
 | SentAt | datetime2 | |
 | AcsMessageId | nvarchar(200) | ACS tracking ID |
+| CreatedAt | datetime2 | |
 
 # Notes
 
