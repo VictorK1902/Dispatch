@@ -9,6 +9,9 @@ CLAUDE.md
 # dotenv files
 .env
 
+# Local dev settings
+appsettings.Development.json
+
 # User-specific files
 *.rsuser
 *.suo
