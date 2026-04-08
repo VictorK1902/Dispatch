@@ -15,9 +15,11 @@ builder.Services.AddSingleton(_ =>
     new ServiceBusClient(builder.Configuration.GetConnectionString("ServiceBus")));
 
 builder.Services.AddSingleton(sp =>
-    sp.GetRequiredService<ServiceBusClient>().CreateSender("jobs-queue"));
+    sp.GetRequiredService<ServiceBusClient>().CreateSender(builder.Configuration["ServiceBus:QueueName"]));
 
-builder.Services.AddScoped<JobService>();
+builder.Services.AddHostedService<ServiceBusCleanupService>();
+
+builder.Services.AddScoped<IJobService, JobService>();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();

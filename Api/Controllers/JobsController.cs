@@ -13,15 +13,15 @@ namespace Dispatch.Api.Controllers;
 [Route("api/v1/[controller]")]
 public class JobsController : ControllerBase
 {
-    private readonly JobService _jobService;
+    private readonly IJobService _jobService;
 
-    public JobsController(JobService jobService)
+    public JobsController(IJobService jobService)
     {
         _jobService = jobService;
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateJobRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateJobRequest request, CancellationToken cancellationToken)
     {
         var clientId = GetClientId();
         if (clientId is null)
@@ -31,28 +31,18 @@ public class JobsController : ControllerBase
         if (validationError is not null)
             return Problem(validationError, statusCode: 400);
 
-        if (_jobService.IsWithinModificationThreshold(request.ScheduledAt))
-            return Problem("ScheduledAt must be at least 10 minutes in the future.", statusCode: 400);
-
-        try
-        {
-            var job = await _jobService.CreateAsync(clientId, request.JobModuleId, request.ScheduledAt, request.Data.GetRawText());
-            return CreatedAtAction(nameof(Get), new { id = job.Id }, ToResponse(job));
-        }
-        catch
-        {
-            return Problem("Job was saved but failed to enqueue. Status set to Failed.", statusCode: 500);
-        }
+        var job = await _jobService.CreateAsync(clientId, request.JobModuleId, request.ScheduledAt, request.Data.GetRawText(), cancellationToken);
+        return CreatedAtAction(nameof(Get), new { id = job.Id }, ToResponse(job));
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get(Guid id)
+    public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken)
     {
         var clientId = GetClientId();
         if (clientId is null)
             return Problem("Unable to determine client identity.", statusCode: 401);
 
-        var job = await _jobService.GetAsync(id, clientId);
+        var job = await _jobService.GetAsync(id, clientId, cancellationToken);
         if (job is null)
             return NotFound();
 
@@ -60,13 +50,13 @@ public class JobsController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateJobRequest request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateJobRequest request, CancellationToken cancellationToken)
     {
         var clientId = GetClientId();
         if (clientId is null)
             return Problem("Unable to determine client identity.", statusCode: 401);
 
-        var job = await _jobService.GetAsync(id, clientId);
+        var job = await _jobService.GetAsync(id, clientId, cancellationToken);
         if (job is null)
             return NotFound();
 
@@ -74,34 +64,27 @@ public class JobsController : ControllerBase
             return Problem("Only jobs with status 'Scheduled' can be modified.", statusCode: 409);
 
         if (_jobService.IsWithinModificationThreshold(job.ScheduledAt))
-            return Problem("Cannot modify a job within 10 minutes of its scheduled execution.", statusCode: 409);
+            return Problem("Cannot modify a job within 1 minute of its scheduled execution.", statusCode: 409);
 
         var validationError = _jobService.ValidateJobModule(job.JobModuleId, request.Data);
         if (validationError is not null)
             return Problem(validationError, statusCode: 400);
 
         if (_jobService.IsWithinModificationThreshold(request.ScheduledAt))
-            return Problem("ScheduledAt must be at least 10 minutes in the future.", statusCode: 400);
+            return Problem("Updated ScheduledAt must be at least 1 minute in the future.", statusCode: 400);
 
-        try
-        {
-            var updated = await _jobService.UpdateAsync(job, request.ScheduledAt, request.Data.GetRawText());
-            return Ok(ToResponse(updated));
-        }
-        catch
-        {
-            return Problem("Failed to update the scheduled job. Status set to Failed.", statusCode: 500);
-        }
+        var updated = await _jobService.UpdateAsync(job, request.ScheduledAt, request.Data.GetRawText(), cancellationToken);
+        return Ok(ToResponse(updated));
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var clientId = GetClientId();
         if (clientId is null)
             return Problem("Unable to determine client identity.", statusCode: 401);
 
-        var job = await _jobService.GetAsync(id, clientId);
+        var job = await _jobService.GetAsync(id, clientId, cancellationToken);
         if (job is null)
             return NotFound();
 
@@ -109,9 +92,9 @@ public class JobsController : ControllerBase
             return Problem("Only jobs with status 'Scheduled' can be cancelled.", statusCode: 409);
 
         if (_jobService.IsWithinModificationThreshold(job.ScheduledAt))
-            return Problem("Cannot cancel a job within 10 minutes of its scheduled execution.", statusCode: 409);
+            return Problem("Cannot cancel a job within 1 minute of its scheduled execution.", statusCode: 409);
 
-        await _jobService.CancelAsync(job);
+        await _jobService.CancelAsync(job, cancellationToken);
         return NoContent();
     }
 

@@ -61,7 +61,7 @@ sequenceDiagram
 
     Client->>API: PUT /jobs/{id}
     API->>SQL: GET job
-    SQL-->>API: job (status: Scheduled, >10 min before execution)
+    SQL-->>API: job (status: Scheduled, >1 min before execution)
     API->>SB: Cancel scheduled message (by sequence number)
     API->>SB: Enqueue new message (updated ScheduledEnqueueTime)
     API->>SQL: UPDATE job (scheduledAt, service_bus_sequence_number)
@@ -79,7 +79,7 @@ sequenceDiagram
 
     Client->>API: DELETE /jobs/{id}
     API->>SQL: GET job
-    SQL-->>API: job (status: Scheduled, >10 min before execution)
+    SQL-->>API: job (status: Scheduled, >1 min before execution)
     API->>SB: Cancel scheduled message (by sequence number)
     API->>SQL: UPDATE job (status: Cancelled)
     API-->>Client: 204 No Content

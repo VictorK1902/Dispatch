@@ -8,9 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dispatch.Api.Services;
 
-public class JobService
+public class JobService : IJobService
 {
-    private static readonly TimeSpan ModificationThreshold = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan ModificationThreshold = TimeSpan.FromMinutes(1);
 
     private readonly DispatchDbContext _db;
     private readonly ServiceBusSender _sender;
@@ -23,7 +23,7 @@ public class JobService
         _logger = logger;
     }
 
-    public async Task<Job> CreateAsync(string clientId, int jobModuleId, DateTimeOffset scheduledAtUtc, string dataPayload)
+    public async Task<Job> CreateAsync(string clientId, int jobModuleId, DateTimeOffset scheduledAtUtc, string dataPayload, CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow;
         var job = new Job
@@ -39,76 +39,76 @@ public class JobService
         };
 
         _db.Jobs.Add(job);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
 
         try
         {
-            job.ServiceBusSequenceNumber = await ScheduleMessageAsync(job.Id, job.ScheduledAt);
-            await _db.SaveChangesAsync();
+            job.ServiceBusSequenceNumber = await ScheduleMessageAsync(job.Id, job.ScheduledAt, cancellationToken);
+            await _db.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to schedule Service Bus message for job {JobId}", job.Id);
             job.Status = JobStatus.Failed;
             job.UpdatedAt = DateTimeOffset.UtcNow;
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(CancellationToken.None);
             throw;
         }
 
         return job;
     }
 
-    public Task<Job?> GetAsync(Guid id, string clientId)
+    public Task<Job?> GetAsync(Guid id, string clientId, CancellationToken cancellationToken = default)
     {
-        return _db.Jobs.FirstOrDefaultAsync(j => j.Id == id && j.ClientId == clientId);
+        return _db.Jobs.FirstOrDefaultAsync(j => j.Id == id && j.ClientId == clientId, cancellationToken);
     }
 
-    public async Task<Job> UpdateAsync(Job job, DateTimeOffset scheduledAtUtc, string dataPayload)
+    public async Task<Job> UpdateAsync(Job job, DateTimeOffset scheduledAtUtc, string dataPayload, CancellationToken cancellationToken = default)
     {
         if (job.ServiceBusSequenceNumber.HasValue)
         {
             try
             {
-                await _sender.CancelScheduledMessageAsync(job.ServiceBusSequenceNumber.Value);
+                await _sender.CancelScheduledMessageAsync(job.ServiceBusSequenceNumber.Value, cancellationToken);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to cancel scheduled message {SequenceNumber} for job {JobId}", job.ServiceBusSequenceNumber, job.Id);
                 job.Status = JobStatus.Failed;
                 job.UpdatedAt = DateTimeOffset.UtcNow;
-                await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync(CancellationToken.None);
                 throw;
             }
         }
 
-        job.ScheduledAt = scheduledAtUtc;
-        job.DataPayload = dataPayload;
-        job.UpdatedAt = DateTimeOffset.UtcNow;
-
         try
         {
-            job.ServiceBusSequenceNumber = await ScheduleMessageAsync(job.Id, job.ScheduledAt);
-            await _db.SaveChangesAsync();
+            var sequenceNumber = await ScheduleMessageAsync(job.Id, scheduledAtUtc, cancellationToken);
+            job.ScheduledAt = scheduledAtUtc;
+            job.DataPayload = dataPayload;
+            job.ServiceBusSequenceNumber = sequenceNumber;
+            job.UpdatedAt = DateTimeOffset.UtcNow;
+            await _db.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to reschedule Service Bus message for job {JobId}", job.Id);
             job.Status = JobStatus.Failed;
             job.UpdatedAt = DateTimeOffset.UtcNow;
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(CancellationToken.None);
             throw;
         }
 
         return job;
     }
 
-    public async Task CancelAsync(Job job)
+    public async Task CancelAsync(Job job, CancellationToken cancellationToken = default)
     {
         if (job.ServiceBusSequenceNumber.HasValue)
         {
             try
             {
-                await _sender.CancelScheduledMessageAsync(job.ServiceBusSequenceNumber.Value);
+                await _sender.CancelScheduledMessageAsync(job.ServiceBusSequenceNumber.Value, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -118,7 +118,7 @@ public class JobService
 
         job.Status = JobStatus.Cancelled;
         job.UpdatedAt = DateTimeOffset.UtcNow;
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
     public bool IsWithinModificationThreshold(DateTimeOffset time)
@@ -165,12 +165,12 @@ public class JobService
         return null;
     }
 
-    private async Task<long> ScheduleMessageAsync(Guid jobId, DateTimeOffset scheduledAt)
+    private async Task<long> ScheduleMessageAsync(Guid jobId, DateTimeOffset scheduledAt, CancellationToken cancellationToken)
     {
         var message = new ServiceBusMessage(jobId.ToString())
         {
             CorrelationId = jobId.ToString()
         };
-        return await _sender.ScheduleMessageAsync(message, scheduledAt);
+        return await _sender.ScheduleMessageAsync(message, scheduledAt, cancellationToken);
     }
 }

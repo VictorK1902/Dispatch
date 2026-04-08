@@ -62,7 +62,7 @@ Retrieve status and details for a job.
 ```
 
 ## PUT /jobs/{jobId}
-Modify a job's scheduled time and any job module specific property. Only allowed if the job is still `Scheduled` and outside the modification threshold (e.g., >10 minutes before execution).
+Modify a job's scheduled time and any job module specific property. Only allowed if the job is still `Scheduled` and outside the modification threshold (e.g., >1 minutes before execution).
 
 **Request body:**
 ```json
