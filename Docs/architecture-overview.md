@@ -7,7 +7,7 @@ The Job Dispatch Service allows authorized clients to schedule future jobs via a
 | Component | Azure Service | Responsibility |
 |-----------|--------------|----------------|
 | Job Scheduling API | App Service | Accept and validate job requests |
-| Storage | Azure SQL | Persist job records, module definitions, and notification history |
+| Storage | Azure SQL | Persist job records and module definitions |
 | Message Broker | Service Bus | Hold scheduled (thin) messages; trigger workers to run job at the right time |
 | Worker | Azure Function (SB trigger) | Execute job module logic; send success notifications |
 | DLQ Handler | Azure Function (DLQ trigger) | Handle failed messages; mark jobs failed; send failure notifications |
@@ -23,8 +23,8 @@ The Job Dispatch Service allows authorized clients to schedule future jobs via a
 3. API enqueues a Service Bus message with `ScheduledEnqueueTime` set to the job's scheduled time
 4. At the scheduled time, Service Bus delivers the message to the Worker Function
 5. Worker executes the job module logic (e.g., fetch weather → compose email)
-6. Worker sends email via ACS and writes a `notification` record to SQL
-7. Worker updates job status to `Completed`
+6. Worker sends email via ACS
+7. Worker updates job status to `Completed` and store AcsMessageId
 
 ## Failure Path
 1. Worker throws an exception; Service Bus retries per its retry policy

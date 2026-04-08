@@ -1,6 +1,6 @@
 # Overview
 
-Azure SQL database backing the Job Dispatch Service. Three tables: `JobModule`, `Job`, and `Notification`.
+Azure SQL database backing the Job Dispatch Service. Two tables: `JobModule` and `Job`.
 
 # Tables
 
@@ -24,28 +24,15 @@ Represents a scheduled job submitted by a client.
 | Id | uniqueidentifier (PK) | Also used as `CorrelationId` on Service Bus message |
 | ClientId | nvarchar(200) | Entra ID `appid` claim from JWT, stored as `ClientId` |
 | JobModuleId | int | FK to `JobModule.Id` |
-| Status | nvarchar(50) | `Scheduled`, `Running`, `Completed`, `Failed`, `Cancelled` |
+| Status | nvarchar(50) | `Scheduled`, `Completed`, `Failed`, `Cancelled` |
 | ScheduledAt | datetimeoffset | When the job is scheduled to execute |
 | DataPayload | nvarchar(max) | JSON serialized string format |
 | CreatedAt | datetimeoffset | |
 | UpdatedAt | datetimeoffset | |
 | ServiceBusSequenceNumber | bigint (nullable) | Stored for cancellation/modification support |
-
-## `Notification`
-
-Records outbound emails sent for a job (success or failure).
-
-| Column | Type | Notes |
-|--------|------|-------|
-| Id | uniqueidentifier (PK) | |
-| JobId | uniqueidentifier | FK to `Job.Id` |
-| Type | nvarchar(50) | `Success`, `Failure` |
-| RecipientEmail | nvarchar(200) | |
-| SentAt | datetimeoffset | |
-| AcsMessageId | nvarchar(200) | ACS tracking ID |
-| CreatedAt | datetimeoffset | |
+| AcsMessageId | nvarchar(200) (nullable) | ACS tracking ID |
 
 # Notes
 
 - `Job.Id` doubles as the Service Bus `CorrelationId` to link queue messages back to SQL records
-- Status transitions: `Scheduled` → `Running` → `Completed` or `Failed`; `Scheduled` → `Cancelled`
+- Status transitions: `Scheduled` → `Completed` or `Failed`; `Scheduled` → `Cancelled`

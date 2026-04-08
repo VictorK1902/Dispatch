@@ -19,9 +19,8 @@ sequenceDiagram
     Note over SB: Time passes — scheduled time arrives
 
     SB->>Worker: Deliver message
-    Worker->>SQL: UPDATE job (status: Running)
     Note over Worker: Execute module logic
-    Worker->>SQL: UPDATE job (status: Completed)
+    Worker->>SQL: UPDATE job (status: Completed, AcsMessageId)
     Worker->>SB: Complete message
 ```
 
@@ -41,12 +40,11 @@ sequenceDiagram
       Note over Worker: Exception thrown
     end    
 
-    SB->>DLQ: Move message to Dead Letter Queue
     DLQ->>DLQHandler: Deliver DLQ message
+    SB->>DLQ: Move message to Dead Letter Queue
     DLQHandler->>ACS: Send failure notification email
     ACS-->>DLQHandler: OK
-    DLQHandler->>SQL: UPDATE job (status: Failed)
-    DLQHandler->>SQL: INSERT notification
+    DLQHandler->>SQL: UPDATE job (status: Failed, AcsMessageId)
     DLQHandler->>DLQ: Complete DLQ message
 ```
 

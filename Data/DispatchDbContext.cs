@@ -7,7 +7,6 @@ public class DispatchDbContext(DbContextOptions<DispatchDbContext> options) : Db
 {
     public DbSet<JobModule> JobModules => Set<JobModule>();
     public DbSet<Job> Jobs => Set<Job>();
-    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -16,13 +15,6 @@ public class DispatchDbContext(DbContextOptions<DispatchDbContext> options) : Db
             entity.HasOne(e => e.JobModule)
                 .WithMany()
                 .HasForeignKey(e => e.JobModuleId);
-        });
-
-        modelBuilder.Entity<Notification>(entity =>
-        {
-            entity.HasOne(e => e.Job)
-                .WithMany()
-                .HasForeignKey(e => e.JobId);
         });
 
         modelBuilder.Entity<JobModule>().HasData(

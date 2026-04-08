@@ -19,6 +19,8 @@ public class Job
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
     public long? ServiceBusSequenceNumber { get; set; }
+    [MaxLength(200)]
+    public string? AcsMessageId { get; set; } = null;
 
     public JobModule JobModule { get; set; } = null!;
 }

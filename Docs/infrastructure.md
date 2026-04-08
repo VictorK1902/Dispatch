@@ -16,13 +16,10 @@ All Azure resources for the Job Dispatch Service, defined as Infrastructure-as-C
 | Service Bus Queue | - | `jobs-queue`; main job queue |
 | Azure Function Plan (Worker) | Flex Consumption | One plan per Function App |
 | Azure Function App (Worker) | - | Service Bus trigger |
-| Azure Function Plan (DLQ Handler) | Flex Consumption | One plan per Function App |
-| Azure Function App (DLQ Handler) | - | Service Bus DLQ trigger |
 | Azure Communication Services | Free tier | Email sending (100/day) |
 | Application Insights | - | Observability for API and Functions |
 | Log Analytics Workspace | - | Backing store for App Insights |
 | User-Assigned MI (Worker) | - | `uami-dispatch-worker`; sole identity for Worker Function |
-| User-Assigned MI (DLQ Handler) | - | TBD; sole identity for DLQ Handler Function |
 
 # Managed Identity Role Assignments
 
@@ -37,8 +34,7 @@ Each Function App uses a single user-assigned MI for all access (Storage, App In
 | `uami-dispatch-worker` (user-assigned) | Application Insights | Monitoring Metrics Publisher (auto-assigned) |
 | `uami-dispatch-worker` (user-assigned) | Service Bus | Azure Service Bus Data Receiver |
 | `uami-dispatch-worker` (user-assigned) | Azure SQL | db_datareader, db_datawriter (T-SQL) |
-| `uami-dispatch-dlq` (user-assigned) | Service Bus | Azure Service Bus Data Receiver |
-| `uami-dispatch-dlq` (user-assigned) | Azure SQL | db_datareader, db_datawriter (T-SQL) |
+| `uami-dispatch-worker` (user-assigned) | Communication Service | Communication and Email Service Owner |
 
 # Entra ID App Registrations
 
