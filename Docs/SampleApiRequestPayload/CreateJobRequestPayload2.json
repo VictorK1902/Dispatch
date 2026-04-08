@@ -1,0 +1,8 @@
+{
+    "jobModuleId": 2,
+    "scheduledAt": "2026-04-15T09:30:00Z",
+    "data": {
+        "symbol": "MSFT",
+        "sendTo": "test@example.com"
+    }
+}

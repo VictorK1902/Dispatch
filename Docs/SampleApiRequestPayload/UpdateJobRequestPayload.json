@@ -1,0 +1,10 @@
+{
+    "scheduledAt": "2026-04-16T10:00:00Z",
+    "data": {
+        "latitude": 47.6062,
+        "longitude": -122.3321,
+        "day": "2026-04-16T00:00:00",
+        "forecastDays": 7,
+        "sendTo": "test@example.com"
+    }
+}
