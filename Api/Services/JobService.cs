@@ -11,6 +11,7 @@ namespace Dispatch.Api.Services;
 public class JobService : IJobService
 {
     private static readonly TimeSpan ModificationThreshold = TimeSpan.FromMinutes(1);
+    private static readonly JsonSerializerOptions ValidatorJsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
     private readonly DispatchDbContext _db;
     private readonly ServiceBusSender _sender;
@@ -133,7 +134,7 @@ public class JobService : IJobService
             case JobModuleTypes.WeatherReport:
                 try
                 {
-                    var weather = JsonSerializer.Deserialize<WeatherReportInput>(data.GetRawText());
+                    var weather = JsonSerializer.Deserialize<WeatherReportInput>(data.GetRawText(), ValidatorJsonOptions);
                     if (weather is null || string.IsNullOrWhiteSpace(weather.SendTo))
                         return "Invalid data for Weather Report module.";
                     if (weather.ForecastDays is not (1 or 3 or 7))
@@ -148,7 +149,7 @@ public class JobService : IJobService
             case JobModuleTypes.StockPriceReport:
                 try
                 {
-                    var stock = JsonSerializer.Deserialize<StockPriceReportInput>(data.GetRawText());
+                    var stock = JsonSerializer.Deserialize<StockPriceReportInput>(data.GetRawText(), ValidatorJsonOptions);
                     if (stock is null || string.IsNullOrWhiteSpace(stock.Symbol) || string.IsNullOrWhiteSpace(stock.SendTo))
                         return "Invalid data for Stock Price Report module.";
                 }

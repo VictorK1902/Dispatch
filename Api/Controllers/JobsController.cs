@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Dispatch.Api.Controllers;
 
 [ApiController]
-[Authorize(Roles = "Jobs.ReadWrite")]
+[Authorize(Roles = "Job.ReadWrite")]
 [Route("api/v1/[controller]")]
 public class JobsController : ControllerBase
 {
@@ -46,6 +46,9 @@ public class JobsController : ControllerBase
         if (job is null)
             return NotFound();
 
+        if (job.ClientId != clientId)
+            return Problem("Cannot view jobs from other clients.", statusCode: 403);
+
         return Ok(ToResponse(job));
     }
 
@@ -59,6 +62,9 @@ public class JobsController : ControllerBase
         var job = await _jobService.GetAsync(id, clientId, cancellationToken);
         if (job is null)
             return NotFound();
+
+        if (job.ClientId != clientId)
+            return Problem("Cannot update jobs from other clients.", statusCode: 403);
 
         if (job.Status != JobStatus.Scheduled)
             return Problem("Only jobs with status 'Scheduled' can be modified.", statusCode: 409);
@@ -87,6 +93,9 @@ public class JobsController : ControllerBase
         var job = await _jobService.GetAsync(id, clientId, cancellationToken);
         if (job is null)
             return NotFound();
+
+        if (job.ClientId != clientId)
+            return Problem("Cannot cancel jobs from other clients.", statusCode: 403);
 
         if (job.Status != JobStatus.Scheduled)
             return Problem("Only jobs with status 'Scheduled' can be cancelled.", statusCode: 409);

@@ -2,6 +2,26 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Debug Api",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build (api)",
+            "program": "${workspaceFolder}/Api/bin/Debug/net10.0/Api.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Api",
+            "stopAtEntry": false,
+            "env": {
+                // Adding /opt/homebrew/bin to the env in launch.json, regardless of how VS Code was opened.
+                // This is needed for DefaultAzureCredential to work locally
+                // Mac only. Adjust for Windows/Linux as needed
+                "PATH": "/opt/homebrew/bin:${env:PATH}"
+            },
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            }
+        },
+        {
             "name": "Attach to .NET Functions",
             "type": "coreclr",
             "request": "attach",
