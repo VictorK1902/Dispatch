@@ -35,6 +35,65 @@
 			}
 		},
 		{
+			"label": "clean release (api)",
+			"command": "dotnet",
+			"args": [
+				"clean",
+				"--configuration",
+				"Release",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"type": "process",
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/Api"
+			}
+		},
+		{
+			"label": "publish (api)",
+			"command": "dotnet",
+			"args": [
+				"publish",
+				"--configuration",
+				"Release",
+				"--output",
+				"./publish",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"type": "process",
+			"dependsOn": "clean release (api)",
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/Api"
+			}
+		},
+		{
+			"label": "deploy (api)",
+			"command": "az",
+			"args": [
+				"webapp",
+				"deploy",
+				"--resource-group",
+				"rg-dispatch",
+				"--name",
+				"api-dispatch",
+				"--src-path",
+				"./publish",
+				"--type",
+				"zip",
+				"--runtime",
+				"DOTNETCORE:10.0"
+			],
+			"type": "process",
+			"dependsOn": "publish (api)",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}/Api"
+			}
+		},
+		{
 			"label": "clean (functions)",
 			"command": "dotnet",
 			"args": [
@@ -99,7 +158,7 @@
 			"options": {
 				"cwd": "${workspaceFolder}/Worker"
 			}
-		},
+		},		
 		{
 			"label": "run (functions)",
 			"type": "func",
