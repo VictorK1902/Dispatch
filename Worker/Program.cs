@@ -11,6 +11,12 @@ using Dispatch.Worker.Services;
 using Dispatch.Worker.Services.Handlers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using ScottPlot;
+
+// Bundle a font to avoid missing system fonts on Linux containers
+var fontPath = Path.Combine(AppContext.BaseDirectory, "Fonts", "DejaVuSans.ttf");
+Fonts.AddFontFile("DejaVu Sans", fontPath);
+Fonts.Default = "DejaVu Sans";
 
 var builder = FunctionsApplication.CreateBuilder(args);
 

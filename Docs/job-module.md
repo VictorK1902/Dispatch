@@ -7,7 +7,15 @@ Generate a weather report (within the next 1, 3 or 7 days) based on input locati
 
 Refer to [Weather Report Data Schema](api-contract.md#weatherreport-jobmoduleid-1) for more details.
 
+Sample chart generated.
+
+<img src="img/WeatherForecast.png" width="600" />
+
 ## Stock Price Report
 Generate a full monthly historical price report of a stock symbol and send an email to target recipient. Stock price data is fetched from the free version of [Alpha Vantage](https://www.alphavantage.co/).
 
 Refer to [Stock Price Report Data Schema](api-contract.md#stockpricereport-jobmoduleid-2) for more details.
+
+Sample chart generated.
+
+<img src="img/MSFT.png" width="600" />

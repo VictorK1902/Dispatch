@@ -13,10 +13,22 @@ public class ChartService : IChartService
         var scatter = plot.Add.ScatterLine(xDoubles, ys);
 
         plot.Axes.DateTimeTicksBottom();
-        plot.Title(title);
-        plot.XLabel(xLabel);
-        plot.YLabel(yLabel);
+        plot.Layout.Fixed(new PixelPadding(80, 30, 60, 50));
 
-        return plot.GetImageBytes(800, 400, ImageFormat.Png);
+        plot.Title(title);
+        plot.Axes.Title.Label.FontName = Fonts.Default;
+        plot.Axes.Title.Label.Bold = false;
+
+        plot.XLabel(xLabel);
+        plot.Axes.Bottom.Label.FontName = Fonts.Default;
+        plot.Axes.Bottom.Label.Bold = false;
+
+        plot.YLabel(yLabel);
+        plot.Axes.Left.Label.FontName = Fonts.Default;
+        plot.Axes.Left.Label.Bold = false;
+
+        int width = Math.Max(800, Math.Min(1600, xs.Length * 5));
+        int height = width / 2;
+        return plot.GetImageBytes(width, height, ImageFormat.Png);
     }
 }

@@ -19,3 +19,14 @@ Ensure the following app settings and connection strings are created via Azure p
   }
 }
 ```
+
+The following app settings are also required in order for the designated user-assigned managed identity (assigned to the function app) to work. Locally, they are not needed because Worker falls back to Azure default auth (of current user).
+
+```
+// Required for Service Bus access
+"ServiceBusConnection__clientId": "<client-id-of-uami>"
+"ServiceBusConnection__credential": "managedidentity"
+
+// Required for ACS access
+"AZURE_CLIENT_ID": "<client-id-of-uami>"
+```

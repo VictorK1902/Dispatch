@@ -166,7 +166,23 @@
 			"options": {
 				"cwd": "${workspaceFolder}/Worker"
 			}
-		},		
+		},
+		{
+			"label": "deploy (functions)",
+			"command": "func",
+			"args": [
+				"azure",
+				"functionapp",
+				"publish",
+				"func-dispatch-worker"
+			],
+			"type": "process",
+			"dependsOn": "publish (functions)",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}/Worker"
+			}
+		},
 		{
 			"label": "run (functions)",
 			"type": "func",

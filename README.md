@@ -1,6 +1,6 @@
 # Dispatch
 
-A job scheduling service built on Azure that allows authorized clients to schedule future jobs via a REST API. At the scheduled time, the backend executes the job and sends an email notification with the results.
+A job scheduling service built on Azure that allows authorized clients to schedule predefined jobs with custom input via a REST API. At the scheduled time, the backend executes the job and sends an email notification with the results.
 
 ## Architecture
 
