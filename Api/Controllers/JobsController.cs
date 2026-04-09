@@ -83,6 +83,46 @@ public class JobsController : ControllerBase
         return Ok(ToResponse(updated));
     }
 
+    [HttpPatch("{id:guid}")]
+    public async Task<IActionResult> Patch(Guid id, [FromBody] PatchJobRequest request, CancellationToken cancellationToken)
+    {
+        var clientId = GetClientId();
+        if (clientId is null)
+            return Problem("Unable to determine client identity.", statusCode: 401);
+
+        if (request.ScheduledAt is null && request.Data is null)
+            return Problem("At least one of 'ScheduledAt' or 'Data' must be provided.", statusCode: 400);
+
+        var job = await _jobService.GetAsync(id, clientId, cancellationToken);
+        if (job is null)
+            return NotFound();
+
+        if (job.ClientId != clientId)
+            return Problem("Cannot update jobs from other clients.", statusCode: 403);
+
+        if (job.Status != JobStatus.Scheduled)
+            return Problem("Only jobs with status 'Scheduled' can be modified.", statusCode: 409);
+
+        if (_jobService.IsWithinModificationThreshold(job.ScheduledAt))
+            return Problem("Cannot modify a job within 1 minute of its scheduled execution.", statusCode: 409);
+
+        var newScheduledAt = request.ScheduledAt ?? job.ScheduledAt;
+        var newDataPayload = request.Data is not null ? request.Data.Value.GetRawText() : job.DataPayload;
+
+        if (request.Data is not null)
+        {
+            var validationError = _jobService.ValidateJobModule(job.JobModuleId, request.Data.Value);
+            if (validationError is not null)
+                return Problem(validationError, statusCode: 400);
+        }
+
+        if (request.ScheduledAt is not null && _jobService.IsWithinModificationThreshold(request.ScheduledAt.Value))
+            return Problem("Updated ScheduledAt must be at least 1 minute in the future.", statusCode: 400);
+
+        var updated = await _jobService.UpdateAsync(job, newScheduledAt, newDataPayload, cancellationToken);
+        return Ok(ToResponse(updated));
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {

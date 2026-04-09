@@ -178,6 +178,71 @@ Same as [GET /jobs/{jobId}](#get-jobsjobid) response.
 }
 ```
 
+## PATCH /jobs/{jobId}
+
+Partially update a job. Only the provided fields are changed; omitted fields retain their current values. Only allowed if the job is still `Scheduled` and outside the modification threshold (>1 minute before execution).
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| jobId | uuid | The job's unique identifier |
+
+### Request Body Schema
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| scheduledAt | date-time | no | New scheduled time; must be >1 minute in the future |
+| data | object | no | Updated module-specific payload (full replacement of `data` only) |
+
+At least one of `scheduledAt` or `data` must be provided.
+
+### Response Schema (`200 OK`)
+
+Same as [GET /jobs/{jobId}](#get-jobsjobid) response.
+
+### Sample Request — reschedule only
+
+```json
+{
+  "scheduledAt": "2026-04-10T12:00:00Z"
+}
+```
+
+### Sample Request — update data only
+
+```json
+{
+  "data": {
+    "latitude": 40.7128,
+    "longitude": -74.0060,
+    "day": "2026-04-10T00:00:00",
+    "forecastDays": 7,
+    "sendTo": "test@example.com"
+  }
+}
+```
+
+### Sample Response
+
+```json
+{
+  "id": "30bcf999-5463-4ade-94de-62cb49b9b305",
+  "jobModuleId": 1,
+  "status": "Scheduled",
+  "scheduledAt": "2026-04-10T12:00:00+00:00",
+  "data": {
+    "latitude": 40.7128,
+    "longitude": -74.0060,
+    "day": "2026-04-10T00:00:00",
+    "forecastDays": 7,
+    "sendTo": "test@example.com"
+  },
+  "createdAt": "2026-04-08T04:50:08.522019+00:00",
+  "updatedAt": "2026-04-09T15:30:00.000000+00:00"
+}
+```
+
 ## DELETE /jobs/{jobId}
 
 Cancel a scheduled job. Only allowed if the job is still `Scheduled` and outside the modification threshold.
@@ -240,7 +305,7 @@ Every write endpoint coordinates between SQL and Service Bus without a shared tr
 
 **POST /jobs** — SQL write succeeds, Service Bus enqueue fails. The job is stuck in `Scheduled` with no corresponding message — it will never execute.
 
-**PUT /jobs/{jobId}** — This performs a cancel-and-re-enqueue (Service Bus messages cannot be modified in place). If the cancel succeeds but the re-enqueue fails, the job record reflects the updated schedule but has no message in the queue. If the SQL update succeeds but the cancel fails, the original message is still live and may execute on the old schedule.
+**PUT /jobs/{jobId}** and **PATCH /jobs/{jobId}** — Both perform a cancel-and-re-enqueue (Service Bus messages cannot be modified in place). If the cancel succeeds but the re-enqueue fails, the job record reflects the updated schedule but has no message in the queue. If the SQL update succeeds but the cancel fails, the original message is still live and may execute on the old schedule.
 
 **DELETE /jobs/{jobId}** — SQL is updated to `Cancelled` but `CancelScheduledMessageAsync` fails. The message is still live and will be delivered to the Worker. Mitigation: the Worker should check job status before executing and skip `Cancelled` jobs.
 

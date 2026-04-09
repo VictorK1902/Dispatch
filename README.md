@@ -57,7 +57,7 @@ Dispatch supports pluggable job modules. Each module defines its own input schem
 
 ## API
 
-Full CRUD operations on jobs — `POST`, `GET`, `PUT`, `DELETE` — scoped to the calling client. Errors follow the [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) Problem Details format.
+Full CRUD operations on jobs — `POST`, `GET`, `PUT`, `PATCH`, `DELETE` — scoped to the calling client. `PUT` performs a full replacement; `PATCH` allows partial updates (e.g., reschedule without resending the data payload). Errors follow the [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) Problem Details format.
 
 See [API Contract](Docs/api-contract.md) for endpoint details, request/response schemas, and sample payloads.
 
