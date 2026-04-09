@@ -11,6 +11,8 @@ public class WeatherReportHandler : IJobModuleHandler
 {
     public int JobModuleId => JobModuleTypes.WeatherReport;
 
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
     private readonly IEmailService _emailService;
     private readonly IChartService _chartService;
     private readonly IWeatherApiService _weatherApiService;
@@ -26,7 +28,7 @@ public class WeatherReportHandler : IJobModuleHandler
 
     public async Task<string> ExecuteAsync(Job job, CancellationToken cancellationToken)
     {
-        var input = JsonSerializer.Deserialize<WeatherReportInput>(job.DataPayload)
+        var input = JsonSerializer.Deserialize<WeatherReportInput>(job.DataPayload, JsonOptions)
             ?? throw new InvalidOperationException($"Failed to deserialize DataPayload for job {job.Id}");
 
         _logger.LogInformation("Executing WeatherReport for job {JobId}", job.Id);

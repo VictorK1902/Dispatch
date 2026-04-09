@@ -28,9 +28,17 @@ public class WorkerDeadLetter
         ServiceBusMessageActions messageActions,
         CancellationToken cancellationToken)
     {
-        // Send email first
+        // Send email first (best-effort — don't let email failure prevent DB update)
         string emailBody = $"Dead-lettered message — MessageId: {message.MessageId}, CorrelationId: {message.CorrelationId}, Reason: {message.DeadLetterReason}, Description: {message.DeadLetterErrorDescription}";
-        var acsMessageId = await _emailService.SendToAdminAsync("DLQ", emailBody, cancellationToken);
+        string? acsMessageId = null;
+        try
+        {
+            acsMessageId = await _emailService.SendToAdminAsync("DLQ", emailBody, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send DLQ notification email for MessageId: {MessageId}", message.MessageId);
+        }
         _logger.LogWarning("Dead-lettered message — MessageId: {MessageId}, CorrelationId: {CorrelationId}, AcsMessageId {AcsMessageId}, Reason: {DeadLetterReason}, Description: {DeadLetterErrorDescription}",
         message.MessageId, message.CorrelationId, acsMessageId, message.DeadLetterReason, message.DeadLetterErrorDescription);
         

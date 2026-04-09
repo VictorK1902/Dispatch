@@ -11,6 +11,8 @@ public class StockPriceReportHandler : IJobModuleHandler
 {
     public int JobModuleId => JobModuleTypes.StockPriceReport;
 
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
     private readonly IEmailService _emailService;
     private readonly IChartService _chartService;
     private readonly IStockPriceApiService _stockPriceApiService;
@@ -26,7 +28,7 @@ public class StockPriceReportHandler : IJobModuleHandler
 
     public async Task<string> ExecuteAsync(Job job, CancellationToken cancellationToken)
     {
-        var input = JsonSerializer.Deserialize<StockPriceReportInput>(job.DataPayload)
+        var input = JsonSerializer.Deserialize<StockPriceReportInput>(job.DataPayload, JsonOptions)
             ?? throw new InvalidOperationException($"Failed to deserialize DataPayload for job {job.Id}");
 
         _logger.LogInformation("Executing StockPriceReport for job {JobId}: Symbol={Symbol}", job.Id, input.Symbol);

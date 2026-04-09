@@ -96,7 +96,9 @@
 			"label": "run (api)",
 			"command": "dotnet",
 			"args": [
-				"run"
+				"run",
+				"--launch-profile",
+				"https"
 			],
 			"type": "process",
 			"dependsOn": "build (api)",
