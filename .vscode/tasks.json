@@ -70,6 +70,16 @@
 			}
 		},
 		{
+			"label": "zip (api)",
+			"type": "shell",
+			"command": "cd publish && zip -r ../publish.zip . && cd ..",
+			"dependsOn": "publish (api)",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}/Api"
+			}
+		},
+		{
 			"label": "deploy (api)",
 			"command": "az",
 			"args": [
@@ -80,14 +90,12 @@
 				"--name",
 				"api-dispatch",
 				"--src-path",
-				"./publish",
+				"publish.zip",
 				"--type",
-				"zip",
-				"--runtime",
-				"DOTNETCORE:10.0"
+				"zip"
 			],
 			"type": "process",
-			"dependsOn": "publish (api)",
+			"dependsOn": "zip (api)",
 			"problemMatcher": [],
 			"options": {
 				"cwd": "${workspaceFolder}/Api"
