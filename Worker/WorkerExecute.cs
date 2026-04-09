@@ -2,6 +2,7 @@ using Azure.Messaging.ServiceBus;
 using Dispatch.Contracts;
 using Dispatch.Data;
 using Dispatch.Worker.Interfaces;
+using Dispatch.Worker.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -60,13 +61,26 @@ public class WorkerExecute
             return;
         }
 
-        // If ExecuteAsync throws, the function fails and the runtime abandons the message.
-        // Service Bus re-delivers it (up to MaxDeliveryCount on the queue, e.g. 10).
-        // After MaxDeliveryCount is exhausted, the message is automatically dead-lettered.
-        var acsMessageId = await handler.ExecuteAsync(job, cancellationToken);
-
+        string acsMessageId;
+        try
+        {
+            acsMessageId = await handler.ExecuteAsync(job, cancellationToken);
+        }
+        catch (ExternalApiException ex)
+        {
+            // Catching ExternalApiException specifically
+            // Other exception types should still cause the message to be re-delivered.
+            _logger.LogError(ex, "Job {JobId} failed due to an API error: {Message}", jobId, ex.Message);
+            job.Status = JobStatus.Failed;
+            job.UpdatedAt = DateTimeOffset.UtcNow;
+            await _db.SaveChangesAsync();
+            await messageActions.DeadLetterMessageAsync(message, deadLetterReason: ex.Message);
+            return;
+        }
+        // Success otherwise
         job.Status = JobStatus.Completed;
         job.UpdatedAt = DateTimeOffset.UtcNow;
+        job.AcsMessageId = acsMessageId;
         await _db.SaveChangesAsync();
         await messageActions.CompleteMessageAsync(message);
 

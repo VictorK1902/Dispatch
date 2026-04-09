@@ -29,6 +29,10 @@ public class StockPriceApiService : IStockPriceApiService
 
         using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+
+        if (doc.RootElement.TryGetProperty("Error Message", out var errorElement))
+            throw new StockPriceApiException(errorElement.GetString() ?? "Unknown API error");
+
         var timeSeries = doc.RootElement.GetProperty("Monthly Time Series");
 
         var entries = timeSeries.EnumerateObject()

@@ -20,7 +20,16 @@ public class WeatherApiService : IWeatherApiService
         response.EnsureSuccessStatusCode();
 
         using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);                
+        using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+
+        if (doc.RootElement.TryGetProperty("error", out var errorFlag) && errorFlag.GetBoolean())
+        {
+            var reason = doc.RootElement.TryGetProperty("reason", out var reasonElement)
+                ? reasonElement.GetString() ?? "Unknown API error"
+                : "Unknown API error";
+            throw new WeatherApiException(reason);
+        }
+
         var hourly = doc.RootElement.GetProperty("hourly");
 
         var times = hourly.GetProperty("time").EnumerateArray()
