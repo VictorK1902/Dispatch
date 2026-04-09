@@ -1,8 +1,6 @@
 # Overview
 
-All Azure resources for the Job Dispatch Service, defined as Infrastructure-as-Code (Bicep).
-
-> TODO: Bicep files will live under `/infra`
+All Azure resources for the Job Dispatch Service, defined as Infrastructure-as-Code (Terraform).
 
 # Resource Inventory
 
@@ -17,6 +15,7 @@ All Azure resources for the Job Dispatch Service, defined as Infrastructure-as-C
 | Azure Function Plan (Worker) | Flex Consumption | One plan per Function App |
 | Azure Function App (Worker) | - | Service Bus trigger |
 | Azure Communication Services | Free tier | Email sending (100/day) |
+| Email Communication Service | - | Child resource of ACS; provides the sender domain |
 | Application Insights | - | Observability for API and Functions |
 | Log Analytics Workspace | - | Backing store for App Insights |
 | User-Assigned MI (Worker) | - | `uami-dispatch-worker`; sole identity for Worker Function |
@@ -40,8 +39,8 @@ Each Function App uses a single user-assigned MI for all access (Storage, App In
 
 | Registration | Purpose |
 |-------------|---------|
-| `dispatch-api` | Represents the API; defines the `Jobs.ReadWrite` app role |
-| `dispatch-client-test` | Test client; granted `Jobs.ReadWrite` with admin consent |
+| `dispatch-api` | Represents the API; defines the `Job.ReadWrite` app role |
+| `dispatch-client-test` | Test client; granted `Job.ReadWrite` with admin consent |
 | `dispatch-client-{name}` | One per additional authorized client; granted the app role |
 
 # Notes
@@ -49,4 +48,4 @@ Each Function App uses a single user-assigned MI for all access (Storage, App In
 - All resources in a single resource group: `rg-dispatch`
 - Location: `centralus`
 - Naming convention: `{resource-type}-dispatch-{qualifier}` (e.g., `func-dispatch-worker`, `uami-dispatch-worker`)
-- IaC: Bicep preferred over ARM; Terraform is an alternative
+- IaC: Terraform

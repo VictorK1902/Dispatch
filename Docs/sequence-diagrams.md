@@ -35,13 +35,13 @@ sequenceDiagram
     participant ACS
     participant SQL as Azure SQL
 
-    loop Until Retries Exhausted
+    loop Until MaxRetry Hit
       SB->>Worker: Deliver message
       Note over Worker: Exception thrown
     end    
 
-    DLQ->>DLQHandler: Deliver DLQ message
     SB->>DLQ: Move message to Dead Letter Queue
+    DLQ->>DLQHandler: Deliver DLQ message
     DLQHandler->>ACS: Send failure notification email
     ACS-->>DLQHandler: OK
     DLQHandler->>SQL: UPDATE job (status: Failed, AcsMessageId)
@@ -62,7 +62,7 @@ sequenceDiagram
     SQL-->>API: job (status: Scheduled, >1 min before execution)
     API->>SB: Cancel scheduled message (by sequence number)
     API->>SB: Enqueue new message (updated ScheduledEnqueueTime)
-    API->>SQL: UPDATE job (scheduledAt, service_bus_sequence_number)
+    API->>SQL: UPDATE job (scheduledAt, sequenceNumber)
     API-->>Client: 200 OK
 ```
 
