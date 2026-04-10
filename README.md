@@ -54,8 +54,8 @@ Dispatch supports pluggable job modules. Each module defines its own input schem
 | `Worker/` | Azure Functions (Service Bus trigger) | Execute job module logic, send notifications |
 | `Data/` | Class library | EF Core DbContext, entities, migrations |
 | `Contracts/` | Class library | Shared job module input models |
-| `Api.Tests/` | xUnit test project | Unit tests for API controllers and services |
-| `Worker.Tests/` | xUnit test project | Unit tests for Worker functions, handlers, and API services |
+| `Api.Tests/` | xUnit test project | Unit tests for API controllers and services using xUnit, Moq, and EF Core InMemory |
+| `Worker.Tests/` | xUnit test project | Unit tests for Worker functions, handlers, and API services using xUnit, Moq, and EF Core InMemory |
 
 ## API
 
@@ -74,17 +74,6 @@ Detailed design docs live in [`Docs/`](Docs/):
 - [Infrastructure](Docs/infrastructure.md)
 - [Sequence Diagrams](Docs/sequence-diagrams.md)
 - [Architecture Decision Records](Docs/adr/)
-
-## Testing
-
-70 unit tests across two test projects using xUnit, Moq, and EF Core InMemory:
-
-- **Api.Tests** (48 tests) — controllers and services
-- **Worker.Tests** (22 tests) — functions, job module handlers, and external API services
-
-```bash
-dotnet test
-```
 
 ## Roadmap
 
