@@ -54,8 +54,6 @@ public class WorkerExecute
         if (handler is null)
         {
             _logger.LogError("No handler registered for JobModuleId {ModuleId}", job.JobModuleId);
-            job.Status = JobStatus.Failed;
-            await _db.SaveChangesAsync();
             // Move it to DLQ
             await messageActions.DeadLetterMessageAsync(message);
             return;
@@ -71,9 +69,6 @@ public class WorkerExecute
             // Catching ExternalApiException specifically
             // Other exception types should still cause the message to be re-delivered.
             _logger.LogError(ex, "Job {JobId} failed due to an API error: {Message}", jobId, ex.Message);
-            job.Status = JobStatus.Failed;
-            job.UpdatedAt = DateTimeOffset.UtcNow;
-            await _db.SaveChangesAsync();
             await messageActions.DeadLetterMessageAsync(message, deadLetterReason: ex.Message);
             return;
         }

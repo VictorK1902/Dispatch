@@ -78,4 +78,3 @@ Detailed design docs live in [`Docs/`](Docs/):
 - CI/CD pipeline
 - Terraform IaC
 - Azure Aspire for local dev orchestration
-- Unit tests for API service and controller layers

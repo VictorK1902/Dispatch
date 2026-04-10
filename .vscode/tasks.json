@@ -157,6 +157,8 @@
 				"publish",
 				"--configuration",
 				"Release",
+				"--runtime",
+				"linux-x64",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
 			],
