@@ -135,41 +135,6 @@
 			}
 		},
 		{
-			"label": "clean release (functions)",
-			"command": "dotnet",
-			"args": [
-				"clean",
-				"--configuration",
-				"Release",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"type": "process",
-			"problemMatcher": "$msCompile",
-			"options": {
-				"cwd": "${workspaceFolder}/Worker"
-			}
-		},
-		{
-			"label": "publish (functions)",
-			"command": "dotnet",
-			"args": [
-				"publish",
-				"--configuration",
-				"Release",
-				"--runtime",
-				"linux-x64",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"type": "process",
-			"dependsOn": "clean release (functions)",
-			"problemMatcher": "$msCompile",
-			"options": {
-				"cwd": "${workspaceFolder}/Worker"
-			}
-		},
-		{
 			"label": "deploy (functions)",
 			"command": "func",
 			"args": [
@@ -179,7 +144,6 @@
 				"func-dispatch-worker"
 			],
 			"type": "process",
-			"dependsOn": "publish (functions)",
 			"problemMatcher": [],
 			"options": {
 				"cwd": "${workspaceFolder}/Worker"
