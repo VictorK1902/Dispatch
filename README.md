@@ -51,7 +51,7 @@ All Azure-to-Azure communication uses **Managed Identity** (no connection string
 
 ## Job Modules
 
-Dispatch supports pluggable job modules. Each module defines its own input schema and execution logic. 
+Dispatch supports pluggable job modules. Each module defines its own input schema and execution logic.
 
 Additional job modules can be added by implementing [IJobModuleHandler](Worker/Interfaces/IJobModuleHandler.cs). See [Docs/job-module](Docs/job-module.md) for more details.
 
@@ -85,6 +85,16 @@ GitHub Actions with two workflows:
 - **Deploy** ([deploy.yml](.github/workflows/deploy.yml)) — publish and deploy to Azure after CI succeeds on `release`, or via manual trigger. Authenticates via OIDC federated credential (GitHub → Entra ID).
 
 The `release` branch is protected via ruleset — changes require a PR with passing CI status checks, signed commits, and admin-only merge. Direct pushes are blocked for all users. Deploy authenticates to Azure using OIDC with a federated credential scoped to the `production` GitHub environment.
+
+## Scaling Considerations
+
+The Worker on [Flex Consumption Plan](https://learn.microsoft.com/en-us/azure/azure-functions/flex-consumption-plan) is already auto-scaling. Instance count adjusts based on Service Bus queue depth, while per-instance concurrency is tunable via `maxConcurrentCalls`. This is the component doing the real compute (external API calls, chart generation, email), so it would feel pressure first under load.
+
+The API on [App Service B1](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#azure-app-service-limits) supports manual scale-out (up to 3 instances) but not auto-scale. Moving to Standard S1 or higher adds auto-scale based on CPU or request count with higher instance limits. The API workload itself is lightweight (persist a row, enqueue a message), so it would take significant traffic to require this.
+
+[Azure SQL](https://learn.microsoft.com/en-us/azure/azure-sql/database/scale-resources?view=azuresql) scales vertically by changing the service tier or DTU/vCPU level.
+
+[Service Bus Standard](https://azure.microsoft.com/en-us/pricing/details/service-bus/) handles throughput well out of the box (up to 13M ops per month, additional cost extra per million op). Premium plan adds dedicated capacity if needed.
 
 ## Roadmap
 
