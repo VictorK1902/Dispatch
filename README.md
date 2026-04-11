@@ -1,10 +1,22 @@
 # Dispatch
 
-A job scheduling service built on Azure that allows authorized clients to schedule predefined (extendable) jobs with custom input via a REST API. At the scheduled time, the backend executes the job and sends an email notification with the results.
+A job scheduling service built on Azure that allows authorized clients to schedule predefined (expandable) jobs with custom input via a REST API. At the scheduled time, the backend executes the job and sends an email notification with the results.
 
 ## Architecture
 
 ![Architecture Diagram](Docs/architecture-diagram.png)
+
+## Documentation
+
+Detailed design docs live in [`Docs/`](Docs/):
+
+- [Architecture Overview](Docs/architecture-overview.md)
+- [Data Model](Docs/data-model.md)
+- [API Contract](Docs/api-contract.md)
+- [Job Modules](Docs/job-module.md)
+- [Infrastructure](Docs/infrastructure.md)
+- [Sequence Diagrams](Docs/sequence-diagrams.md)
+- [Architecture Decision Records](Docs/adr/)
 
 ## How It Works
 
@@ -65,18 +77,6 @@ Full CRUD operations on jobs — `POST`, `GET`, `PUT`, `PATCH`, `DELETE` — sco
 
 See [API Contract](Docs/api-contract.md) for endpoint details, request/response schemas, and sample payloads.
 
-## Documentation
-
-Detailed design docs live in [`Docs/`](Docs/):
-
-- [Architecture Overview](Docs/architecture-overview.md)
-- [Data Model](Docs/data-model.md)
-- [API Contract](Docs/api-contract.md)
-- [Job Modules](Docs/job-module.md)
-- [Infrastructure](Docs/infrastructure.md)
-- [Sequence Diagrams](Docs/sequence-diagrams.md)
-- [Architecture Decision Records](Docs/adr/)
-
 ## CI/CD
 
 GitHub Actions with two workflows:
@@ -84,7 +84,7 @@ GitHub Actions with two workflows:
 - **CI** ([ci.yml](.github/workflows/ci.yml)) — build and test on every push to `main` or `release`
 - **Deploy** ([deploy.yml](.github/workflows/deploy.yml)) — publish and deploy to Azure after CI succeeds on `release`, or via manual trigger. Authenticates via OIDC federated credential (GitHub → Entra ID).
 
-The `release` branch is protected — changes require a PR with owner approval and passing CI checks.
+The `release` branch is protected via ruleset — changes require a PR with passing CI status checks, signed commits, and admin-only merge. Direct pushes are blocked for all users. Deploy authenticates to Azure using OIDC with a federated credential scoped to the `production` GitHub environment.
 
 ## Roadmap
 
