@@ -37,7 +37,9 @@ Detailed design docs live in [`Docs/`](Docs/):
 
 ## Auth and Identity
 
-External clients authenticate via **Entra ID client credentials flow**. The API validates the JWT and uses the `appid` claim to scope data access. Clients can only view or modify jobs they created.
+External clients authenticate via **Entra ID client credentials flow** (OAuth 2.0). The API validates the JWT and uses the `appid` claim to scope data access. Clients can only view or modify jobs they created. 
+
+This approach assumes a B2B model where each client is a known, trusted application and requires its own Entra ID app registration, which can be automated as part of a client onboarding pipeline or done manually. Exposing the service to general public requires a different approach such as authorization code flow (OAuth 2.0) or API Key.
 
 All Azure-to-Azure communication uses **Managed Identity** (no connection strings with secrets):
 
