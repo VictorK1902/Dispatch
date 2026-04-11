@@ -1,11 +1,11 @@
 # ADR-003: EF Core Migration Strategy
 
 - **Status:** Accepted
-- **Date:** 2026-04-04
+- **Date:** 2026-04-10
 
 ## Context
 
-The Data project uses EF Core with Azure SQL. We need a strategy for creating and applying schema migrations. The data access layer is a standalone class library (`Data.csproj`) referenced by multiple consumer apps (Worker Function, future API).
+The Data project uses EF Core with Azure SQL. We need a strategy for creating and applying schema migrations. The data access layer is a standalone class library (`Data.csproj`) referenced by multiple consumer apps (Worker Function, API).
 
 `dotnet ef` requires a startup project that can construct the `DbContext` at design time. Using a consumer app (e.g., the Azure Function) as the startup project is fragile — the Functions host has complex startup behavior that EF tooling wasn't designed for.
 
@@ -19,7 +19,7 @@ The Data project uses EF Core with Azure SQL. We need a strategy for creating an
 
 ## Decision
 
-Use **Option 1 (`IDesignTimeDbContextFactory`)** for now, with awareness that Option 3 is the production-grade target.
+Use **Option 1 (`IDesignTimeDbContextFactory`)** with manual application via `dotnet ef database update`.
 
 ## Rationale
 
@@ -41,9 +41,18 @@ dotnet ef migrations add <MigrationName> --project Data --startup-project Data
 dotnet ef database update --project Data --startup-project Data
 ```
 
+## CI/CD Migration Decision (2026-04-10)
+
+When adding GitHub Actions CI/CD, the following database migration pipelines were considered:
+
+1. **Auto-apply (`dotnet ef database update` in deploy workflow)** — rejected. Destructive migrations (column/table drops) would execute without human review.
+2. **Generate SQL script on every push, upload as artifact** — rejected. Noisy in a team setting — most pushes don't touch Data, creating irrelevant artifacts. Path-filtered generation adds complexity for marginal benefit.
+3. **Keep migrations manual** — accepted. Migrations are infrequent, the `IDesignTimeDbContextFactory` workflow is already established, and manual review before applying schema changes is the safest default. This matches how many teams handle database changes regardless of pipeline maturity.
+
+If the project scales to multiple contributors or frequent schema changes, revisit Option 2 with path-filtered triggers (`Data/` changes only) and a manual approval gate before apply.
+
 ## Future Considerations
 
-- **CI/CD pipeline migration:** When adding automated deployments, switch to generating idempotent SQL scripts and executing them via a pipeline task with a dedicated service principal that holds DDL permissions. The app's runtime identity should only have `db_datareader` and `db_datawriter`.
 - **Dedicated Migrator project:** If the design-time factory becomes insufficient (e.g., needing seed data via DI, or multiple DbContexts), introduce a `Data.Migrator` console app.
 
 ## Consequences
