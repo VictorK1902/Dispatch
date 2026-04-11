@@ -1,6 +1,6 @@
 # Dispatch
 
-A job scheduling service built on Azure that allows authorized clients to schedule predefined jobs with custom input via a REST API. At the scheduled time, the backend executes the job and sends an email notification with the results.
+A job scheduling service built on Azure that allows authorized clients to schedule predefined (extendable) jobs with custom input via a REST API. At the scheduled time, the backend executes the job and sends an email notification with the results.
 
 ## Architecture
 
@@ -39,7 +39,9 @@ All Azure-to-Azure communication uses **Managed Identity** (no connection string
 
 ## Job Modules
 
-Dispatch supports pluggable job modules. Each module defines its own input schema and execution logic.
+Dispatch supports pluggable job modules. Each module defines its own input schema and execution logic. 
+
+Additional job modules can be added by implementing [IJobModuleHandler](Worker/Interfaces/IJobModuleHandler.cs). See [Docs/job-module](Docs/job-module.md) for more details.
 
 | Module | Description |
 |--------|-------------|
@@ -75,8 +77,16 @@ Detailed design docs live in [`Docs/`](Docs/):
 - [Sequence Diagrams](Docs/sequence-diagrams.md)
 - [Architecture Decision Records](Docs/adr/)
 
+## CI/CD
+
+GitHub Actions with two workflows:
+
+- **CI** ([ci.yml](.github/workflows/ci.yml)) — build and test on every push to `main` or `release`
+- **Deploy** ([deploy.yml](.github/workflows/deploy.yml)) — publish and deploy to Azure after CI succeeds on `release`, or via manual trigger. Authenticates via OIDC federated credential (GitHub → Entra ID).
+
+The `release` branch is protected — changes require a PR with owner approval and passing CI checks.
+
 ## Roadmap
 
-- CI/CD pipeline
 - Terraform IaC
 - Azure Aspire for local dev orchestration

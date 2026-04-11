@@ -19,3 +19,11 @@ Refer to [Stock Price Report Data Schema](api-contract.md#stockpricereport-jobmo
 Sample chart generated.
 
 <img src="img/MSFT.png" width="600" />
+
+# Adding Job Module
+
+Adding new job module requires
+
+- Implementing [IJobModuleHandler](../Worker/Interfaces/IJobModuleHandler.cs)
+- Adding a new entry to `JobModule` table via [DispatchDbContext](../Data/DispatchDbContext.cs)
+- Exposing this new job module by adding a new request contract that describe its input (i.e. [WeatherReportInput](../Contracts/JobModules/WeatherReportInput.cs)) and a corresponding validator code in [Api/Services/JobService](../Api/Services/JobService.cs)
