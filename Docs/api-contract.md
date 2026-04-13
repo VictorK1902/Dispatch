@@ -124,7 +124,7 @@ Retrieve status and details for a job.
 
 ## PUT /jobs/{jobId}
 
-Modify a job's scheduled time and module-specific data. Only allowed if the job is still `Scheduled` and outside the modification threshold (>1 minute before execution).
+Modify a job's scheduled time and module-specific data. Only allowed if the job is still `Scheduled` and outside the modification threshold (>1 minute before execution). `jobModuleId` cannot be modified.
 
 ### Path Parameters
 
@@ -180,7 +180,7 @@ Same as [GET /jobs/{jobId}](#get-jobsjobid) response.
 
 ## PATCH /jobs/{jobId}
 
-Partially update a job. Only the provided fields are changed; omitted fields retain their current values. Only allowed if the job is still `Scheduled` and outside the modification threshold (>1 minute before execution).
+Partially update a job. Only the provided fields are changed; omitted fields retain their current values. Only allowed if the job is still `Scheduled` and outside the modification threshold (>1 minute before execution). `jobModuleId` cannot be modified.
 
 ### Path Parameters
 
@@ -195,7 +195,7 @@ Partially update a job. Only the provided fields are changed; omitted fields ret
 | scheduledAt | date-time | no | New scheduled time; must be >1 minute in the future |
 | data | object | no | Updated module-specific payload (full replacement of `data` only) |
 
-At least one of `scheduledAt` or `data` must be provided.
+At least one of `scheduledAt` or `data` must be provided. Partial update of `data` is not supported.
 
 ### Response Schema (`200 OK`)
 

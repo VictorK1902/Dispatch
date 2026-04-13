@@ -35,7 +35,7 @@ sequenceDiagram
     participant ACS
     participant SQL as Azure SQL
 
-    loop Until MaxRetry Hit
+    loop Until MaxDeliveryCount Hit
       SB->>Worker: Deliver message
       Note over Worker: Exception thrown
     end    

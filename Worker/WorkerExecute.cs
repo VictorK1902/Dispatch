@@ -50,6 +50,13 @@ public class WorkerExecute
             return;
         }
 
+        if (job.Status != JobStatus.Scheduled)
+        {
+            _logger.LogWarning("Job {JobId} has status {Status}, skipping execution", jobId, job.Status);
+            await messageActions.CompleteMessageAsync(message);
+            return;
+        }
+
         var handler = _handlers.FirstOrDefault(h => h.JobModuleId == job.JobModuleId);
         if (handler is null)
         {

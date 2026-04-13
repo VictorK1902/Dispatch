@@ -10,7 +10,7 @@ The Worker and DLQ Handler are Azure Functions triggered by Service Bus. A hosti
 ## Options Considered
 
 1. **Flex Consumption plan** — pay-per-execution, cold start that can be improved via pre-provisioned (always-ready) instances, scales to zero, can scale up to 1000 instances, unlimited timeout, one app per plan
-2. **Premium plan** — pre-warmed instances, no cold start, 20-100 instances, up to 100 app per plan, unlimited timeout, higher cost
+2. **Premium plan** — pre-warmed instances, no cold start, 20-100 instances, up to 100 apps per plan, unlimited timeout, higher cost
 3. **App Service plan** — always-on, fixed cost, manual scaling
 
 ## Decision
@@ -27,4 +27,4 @@ Use **Flex Consumption plan**.
 ## Consequences
 
 - Scale-out is automatic; no tuning required at this stage.
-- One plan per Function App — two plans required for Worker and DLQ Handler.
+- One plan - One Function App — Two Functions required for Worker and DLQ Handler.
