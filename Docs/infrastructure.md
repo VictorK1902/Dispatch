@@ -1,6 +1,6 @@
 # Overview
 
-All Azure resources for the Job Dispatch Service, defined as Infrastructure-as-Code (Terraform).
+All Azure resources for the Job Dispatch Service, defined as IaC (Terraform) - WIP.
 
 # Resource Inventory
 
@@ -12,7 +12,7 @@ All Azure resources for the Job Dispatch Service, defined as Infrastructure-as-C
 | Azure SQL Database | Serverless / Standard | Cost-efficient for demo |
 | Service Bus Namespace | Standard | Supports scheduled messages, DLQ, competing consumers |
 | Service Bus Queue | - | `jobs-queue`; main job queue |
-| Azure Function Plan (Worker) | Flex Consumption | One plan per Function App |
+| Azure Function Plan (Worker) | Flex Consumption | One plan - One Function App - Two Functions (Worker and DLQ Handler) |
 | Azure Function App (Worker) | - | Service Bus trigger |
 | Azure Communication Services | Free tier | Email sending (100/day) |
 | Email Communication Service | - | Child resource of ACS; provides the sender domain |

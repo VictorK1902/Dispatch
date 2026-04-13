@@ -2,15 +2,10 @@
 
 A job scheduling service built on Azure that allows authorized clients to schedule predefined (expandable) jobs with custom input via a REST API. At the scheduled time, the backend executes the job and sends an email notification with the results.
 
-## Architecture
-
-![Architecture Diagram](Docs/architecture-diagram.png)
-
 ## Documentation
 
 Detailed design docs live in [`Docs/`](Docs/):
 
-- [Architecture Overview](Docs/architecture-overview.md)
 - [Data Model](Docs/data-model.md)
 - [API Contract](Docs/api-contract.md)
 - [Job Modules](Docs/job-module.md)
@@ -18,22 +13,29 @@ Detailed design docs live in [`Docs/`](Docs/):
 - [Sequence Diagrams](Docs/sequence-diagrams.md)
 - [Architecture Decision Records](Docs/adr/)
 
+## Architecture
+
+![Architecture Diagram](Docs/architecture-diagram.png)
+
+## Components
+
+| Component | Azure Service | Responsibility |
+|-----------|--------------|----------------|
+| **Job Scheduling API** | App Service | ASP.NET Core. Accept and validate job requests |
+| **Storage** | Azure SQL | EF Core, code-first. Persist job records and module definitions |
+| **Message Broker** | Service Bus | Standard plan. Hold scheduled messages; trigger workers at the right time; DLQ for failures |
+| **Worker** | Azure Function | Flex consumption plan. SB trigger via job queue. Execute job module logic; send success notifications |
+| **DLQ Handler** | Azure Function | Flex consumption plan. SB trigger via DLQ. Handle failed messages; mark jobs failed; send failure notifications |
+| **Email** | Azure Communication Services | Send outbound email for both success and failure cases |
+| **Auth** | Entra ID | Client credentials flow (JWT bearer) |
+| **Identity** | Managed Identity | Zero stored secrets for all Azure-to-Azure auth |
+| **Observability** | Application Insights + Log Analytics | Structured logging and monitoring |
+
 ## How It Works
 
 **Happy path:** Client schedules a job via the API. The API persists the job to Azure SQL and enqueues a Service Bus message with a scheduled delivery time. When the time arrives, the Worker Function picks up the message, executes the job module logic, emails the results via ACS, and marks the job as completed.
 
 **Failure path:** If the Worker throws, Service Bus retries per its retry policy. After max delivery attempts, the message lands in the Dead Letter Queue. A DLQ Handler Function marks the job as failed and sends a failure notification email.
-
-## Tech Stack
-
-- **API** — ASP.NET Core Web API on Azure App Service
-- **Worker** — Azure Functions (Service Bus trigger, Flex Consumption plan)
-- **Messaging** — Azure Service Bus (scheduled messages, DLQ)
-- **Database** — Azure SQL (EF Core, code-first migrations)
-- **Email** — Azure Communication Services
-- **Auth** — Entra ID (client credentials flow, JWT bearer)
-- **Identity** — Managed Identity throughout (zero stored secrets for Azure-to-Azure auth)
-- **Observability** — Application Insights + Log Analytics
 
 ## Auth and Identity
 

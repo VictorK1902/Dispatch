@@ -15,6 +15,8 @@ Defines the predefined types of job the system can execute.
 | Description | nvarchar(500) | |
 | CreatedAt | datetimeoffset | |
 
+Seeding for `JobModule` is required and handled via [DispatchDbContext](../Data/DispatchDbContext.cs).
+
 ## `Job`
 
 Represents a scheduled job submitted by a client.
@@ -26,7 +28,7 @@ Represents a scheduled job submitted by a client.
 | JobModuleId | int | FK to `JobModule.Id` |
 | Status | nvarchar(50) | `Scheduled`, `Completed`, `Failed`, `Cancelled` |
 | ScheduledAt | datetimeoffset | When the job is scheduled to execute |
-| DataPayload | nvarchar(max) | JSON serialized string format |
+| DataPayload | nvarchar(max) | JSON serialized string format. See [api-contract](api-contract.md#job-module-data-schemas) for details |
 | CreatedAt | datetimeoffset | |
 | UpdatedAt | datetimeoffset | |
 | ServiceBusSequenceNumber | bigint (nullable) | Stored for cancellation/modification support |
