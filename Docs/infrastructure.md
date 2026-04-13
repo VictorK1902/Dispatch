@@ -11,18 +11,18 @@ All Azure resources for the Job Dispatch Service, defined as IaC (Terraform) - W
 | Azure SQL Server | - | Logical server; parent of the SQL Database |
 | Azure SQL Database | Serverless / Standard | Cost-efficient for demo |
 | Service Bus Namespace | Standard | Supports scheduled messages, DLQ, competing consumers |
-| Service Bus Queue | - | `jobs-queue`; main job queue |
-| Azure Function Plan (Worker) | Flex Consumption | One plan - One Function App - Two Functions (Worker and DLQ Handler) |
-| Azure Function App (Worker) | - | Service Bus trigger |
+| Service Bus Queue | - | `jobs-queue` - main job queue; `jobs-queue/$deadletterqueue` - dead letter queue |
+| Azure Function Plan | Flex Consumption | One plan - One Function App - Two Functions (Worker and DLQ Handler) |
+| Azure Function App | - | Service Bus trigger |
 | Azure Communication Services | Free tier | Email sending (100/day) |
-| Email Communication Service | - | Child resource of ACS; provides the sender domain |
+| Email Communication Service | - | Child resource of ACS; provides the provisioned sender domain |
 | Application Insights | - | Observability for API and Functions |
 | Log Analytics Workspace | - | Backing store for App Insights |
-| User-Assigned MI (Worker) | - | `uami-dispatch-worker`; sole identity for Worker Function |
+| User-Assigned Managed Identity | - | `uami-dispatch-worker`; granting the function app access to the other Azure resources |
 
 # Managed Identity Role Assignments
 
-Each Function App uses a single user-assigned MI for all access (Storage, App Insights, Service Bus, SQL, ACS). System-assigned MI is disabled on Function Apps. App Service uses a system-assigned MI. SQL roles are not Azure RBAC — they are granted via T-SQL post-deployment (`CREATE USER [<identity-name>] FROM EXTERNAL PROVIDER`).
+The Function App uses a single user-assigned MI for all access (Storage, App Insights, Service Bus, SQL, ACS). System-assigned MI is disabled on Function Apps. App Service uses a system-assigned MI. SQL roles are not Azure RBAC — they are granted via T-SQL post-deployment (`CREATE USER [<identity-name>] FROM EXTERNAL PROVIDER`).
 
 | Identity | Resource | Role |
 |----------|----------|------|
