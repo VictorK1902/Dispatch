@@ -146,13 +146,13 @@ The apply creates `rg-dispatch` and all child resources (identities, SQL, Servic
 - **Api / Function code deployments** are handled separately (via CI/CD or manually), not via Terraform. Refer to the `deploy (functions)` task and `deploy (api)` task in [task.json](../.vscode/tasks.json) for more details. You can run those tasks locally to deploy the api and the function app.
 - **Email sender domain**. Terraform provisions the Azure-managed domain on the Email Communication Service plus a `noreply` sender username. The full sender address is exposed as the `acs_sender_address` output.
 - **Azure-injected settings drift.** Azure auto-adds tags (e.g. `hidden-link: /app-insights-resource-id` on the API) and shuffles App Insights connection strings between `site_config` and `app_settings` on the Worker. Without `lifecycle { ignore_changes }`, these show up as phantom diffs on every plan. Both the API and Worker modules include `lifecycle` blocks to suppress this.
-- **`AzureWebJobsStorage` injection.** If the storage account's `allowSharedKeyAccess` is toggled via the CLI or portal, Azure may auto-inject a bare `AzureWebJobsStorage` connection string (with an empty `AccountKey`) into the Function App's app settings. This overrides the identity-based `AzureWebJobsStorage__*` settings and causes `AuthenticationFailed` errors. Fix: delete the injected setting and avoid toggling storage account settings outside of Terraform.
+- **`AzureWebJobsStorage` injection.** If the storage account's `allowSharedKeyAccess` is toggled via the CLI or portal, Azure may auto-inject a bare `AzureWebJobsStorage` connection string (with an empty `AccountKey`) into the Function App's app settings. This overrides the identity-based `AzureWebJobsStorage__*` settings and causes `AuthenticationFailed` errors. To fix this, delete the injected setting and avoid toggling storage account settings outside of Terraform.
 
 ## 6. Naming notes
 
 - ACS and Email Communication Service are **global-only** Azure resource types. `location = "global"` is hardcoded in [modules/acs](../infra/modules/acs/), with `data_location = "United States"` for residency. Both names get a 4-character random suffix to dodge global name collisions.
 - Every other resource uses the convention `{resource-type}-dispatch-{qualifier}` in the region from `var.location`.
-- **App Service / Function App hostnames** (`api-dispatch.azurewebsites.net`, `func-dispatch-worker.azurewebsites.net`) must be globally unique. The current names use clean, human-readable values without a random suffix — this works for a demo project but could collide if someone else has claimed the same name. In a team/production setup, append a random suffix (as done for ACS) or front with a custom domain where the default hostname doesn't matter.
+- **App Service / Function App** hostnames (`api-dispatch.azurewebsites.net`, `func-dispatch-worker.azurewebsites.net`) must be globally unique. The current names do not have a random suffix. This works for a demo project but could collide if someone else has claimed the same name. In a team/production setup, append a random suffix with a custom domain where the default hostname doesn't matter.
 
 ## 7. Teardown
 
@@ -162,10 +162,10 @@ terraform destroy
 ```
 
 Notes:
-- **Entra app registrations and the bootstrap state account are not affected**. They survive teardowns by design.
-- **ACS + Email Communication Service soft-delete for ~30 days.**. A subsequent apply with the same names will fail with "name already exists". The `random_string.acs_suffix` resource regenerates on re-apply (its `keepers` depend on the RG), so you'll get fresh names automatically. To purge sooner:
+- Entra app registrations and the bootstrap state account are not affected. They survive teardowns by design.
+- ACS + Email Communication Service **soft-delete for ~30 days**. A subsequent apply with the same names will fail with "name already exists". The `random_string.acs_suffix` resource regenerates on re-apply (its `keepers` depend on the RG), so you'll get fresh names automatically. To purge sooner:
   ```bash
   az communication list-deleted -o table
   az rest --method delete --url "https://management.azure.com/subscriptions/$(az account show --query id -o tsv)/providers/Microsoft.Communication/locations/global/deletedCommunicationServices/<name>?api-version=2023-04-01"
   ```
-- **Storage account names enter a short reservation window** after delete. If `terraform apply` immediately after `destroy` fails on name availability, wait 15–30 min and retry.
+- Storage account names enter a short reservation window after delete. If `terraform apply` immediately after `destroy` fails on name availability, wait 15–30 min and retry.
