@@ -32,7 +32,7 @@ Use **Option 1 (`IDesignTimeDbContextFactory`)** with manual application via `do
 
 ```bash
 # Set connection string for the session
-export DispatchConnection="Server=<server>.database.windows.net;Database=DispatchDb;..."
+export DispatchConnection="Server=<server>.database.windows.net;Database=Dispatch;..."
 
 # Add a migration
 dotnet ef migrations add <MigrationName> --project Data --startup-project Data

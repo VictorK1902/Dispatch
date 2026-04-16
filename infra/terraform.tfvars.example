@@ -1,0 +1,15 @@
+location            = "centralus"
+resource_group_name = "rg-dispatch"
+
+sql_admin_login     = "you@example.com"
+sql_admin_object_id = "00000000-0000-0000-0000-000000000000"
+
+entra_tenant_id     = "00000000-0000-0000-0000-000000000000"
+entra_api_client_id = "00000000-0000-0000-0000-000000000000"
+
+acs_sender_display_name = "Dispatch Notifications"
+
+admin_email           = "admin@example.com"
+alpha_vantage_api_key = "REPLACE_ME"
+alpha_vantage_api_url = "https://www.alphavantage.co"
+weather_api_url       = "https://api.open-meteo.com"

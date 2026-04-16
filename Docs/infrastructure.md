@@ -1,6 +1,6 @@
 # Overview
 
-All Azure resources for the Job Dispatch Service, defined as IaC (Terraform) - WIP.
+All Azure resources for the Job Dispatch Service, defined as IaC (Terraform).
 
 # Resource Inventory
 
@@ -9,7 +9,7 @@ All Azure resources for the Job Dispatch Service, defined as IaC (Terraform) - W
 | App Service Plan | B1 | Hosts the Job Scheduling API |
 | App Service | - | Public Job Scheduling API |
 | Azure SQL Server | - | Logical server; parent of the SQL Database |
-| Azure SQL Database | Serverless / Standard | Cost-efficient for demo |
+| Azure SQL Database | GP_S_Gen5_1 (Serverless) | Auto-pause at 60 min, 1 GB max for demo |
 | Service Bus Namespace | Standard | Supports scheduled messages, DLQ, competing consumers |
 | Service Bus Queue | - | `jobs-queue` - main job queue; `jobs-queue/$deadletterqueue` - dead letter queue |
 | Azure Function Plan | Flex Consumption | One plan - One Function App - Two Functions (Worker and DLQ Handler) |
@@ -22,15 +22,18 @@ All Azure resources for the Job Dispatch Service, defined as IaC (Terraform) - W
 
 # Managed Identity Role Assignments
 
-The Function App uses a single user-assigned MI for all access (Storage, App Insights, Service Bus, SQL, ACS). System-assigned MI is disabled on Function Apps. App Service uses a system-assigned MI. SQL roles are not Azure RBAC — they are granted via T-SQL post-deployment (`CREATE USER [<identity-name>] FROM EXTERNAL PROVIDER`).
+The Function App uses a single user-assigned MI for all access (Storage, App Insights, Service Bus, SQL, ACS). System-assigned MI is disabled on Function Apps. App Service uses a system-assigned MI. All Azure RBAC role assignments are managed by Terraform ([modules/rbac](../infra/modules/rbac/)). SQL roles are not Azure RBAC — they are granted via T-SQL post-deployment (`CREATE USER [<identity-name>] FROM EXTERNAL PROVIDER`).
 
 | Identity | Resource | Role |
 |----------|----------|------|
 | App Service (system-assigned) | Service Bus | Azure Service Bus Data Sender |
-| App Service (system-assigned) | Azure SQL | db_datareader, db_datawriter |
-| `uami-dispatch-worker` (user-assigned) | Storage Account | Storage Blob Data Owner (auto-assigned) |
-| `uami-dispatch-worker` (user-assigned) | Storage Blob Container | Storage Blob Data Contributor (auto-assigned) |
-| `uami-dispatch-worker` (user-assigned) | Application Insights | Monitoring Metrics Publisher (auto-assigned) |
+| App Service (system-assigned) | App Insights | Monitoring Metrics Publisher |
+| App Service (system-assigned) | Azure SQL | db_datareader, db_datawriter (T-SQL) |
+| `uami-dispatch-worker` (user-assigned) | Storage Account | Storage Blob Data Owner |
+| `uami-dispatch-worker` (user-assigned) | Storage Account | Storage Queue Data Contributor |
+| `uami-dispatch-worker` (user-assigned) | Storage Account | Storage Table Data Contributor |
+| `uami-dispatch-worker` (user-assigned) | Storage Account | Storage Account Contributor |
+| `uami-dispatch-worker` (user-assigned) | App Insights | Monitoring Metrics Publisher |
 | `uami-dispatch-worker` (user-assigned) | Service Bus | Azure Service Bus Data Receiver |
 | `uami-dispatch-worker` (user-assigned) | Azure SQL | db_datareader, db_datawriter (T-SQL) |
 | `uami-dispatch-worker` (user-assigned) | Communication Service | Communication and Email Service Owner |

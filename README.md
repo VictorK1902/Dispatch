@@ -10,6 +10,7 @@ Detailed design docs live in [`Docs/`](Docs/):
 - [API Contract](Docs/api-contract.md)
 - [Job Modules](Docs/job-module.md)
 - [Infrastructure](Docs/infrastructure.md)
+- [Provisioning Guide](Docs/provisioning.md)
 - [Sequence Diagrams](Docs/sequence-diagrams.md)
 - [Architecture Decision Records](Docs/adr/)
 
@@ -26,10 +27,23 @@ Detailed design docs live in [`Docs/`](Docs/):
 | **Message Broker** | Service Bus | Standard plan. Hold scheduled messages; trigger workers at the right time; DLQ for failures |
 | **Worker** | Azure Function | Flex consumption plan. SB trigger via job queue. Execute job module logic; send success notifications |
 | **DLQ Handler** | Azure Function | Flex consumption plan. SB trigger via DLQ. Handle failed messages; mark jobs failed; send failure notifications |
+| **Storage** | Azure Storage Account | Function App runtime storage (blobs, queues, tables); identity-based auth only |
 | **Email** | Azure Communication Services | Send outbound email for both success and failure cases |
 | **Auth** | Entra ID | Client credentials flow (JWT bearer) |
 | **Identity** | Managed Identity | Zero stored secrets for all Azure-to-Azure auth |
 | **Observability** | Application Insights + Log Analytics | Structured logging and monitoring |
+
+## Solution Structure
+
+| Project | Type | Responsibility |
+|---------|------|----------------|
+| `Api/` | ASP.NET Core Web API | Accept and validate job requests, enqueue to Service Bus |
+| `Worker/` | Azure Functions (Service Bus trigger) | Execute job module logic, send notifications |
+| `Data/` | Class library | EF Core DbContext, entities, migrations |
+| `Contracts/` | Class library | Shared job module input models |
+| `infra/` | Terraform | IaC for all Azure resources, modules, and RBAC assignments |
+| `Api.Tests/` | xUnit test project | Unit tests for API controllers and services using xUnit, Moq, and EF Core InMemory |
+| `Worker.Tests/` | xUnit test project | Unit tests for Worker functions, handlers, and API services using xUnit, Moq, and EF Core InMemory |
 
 ## How It Works
 
@@ -49,6 +63,7 @@ All Azure-to-Azure communication uses **Managed Identity** (no connection string
 |----------|----------|------|
 | App Service &rarr; Service Bus | System-assigned MI | Azure Service Bus Data Sender |
 | App Service &rarr; Azure SQL | System-assigned MI | db_datareader, db_datawriter |
+| Worker Function &rarr; Storage Account | User-assigned MI | Blob Data Owner, Queue/Table Data Contributor, Account Contributor |
 | Worker Function &rarr; Service Bus | User-assigned MI | Azure Service Bus Data Receiver |
 | Worker Function &rarr; Azure SQL | User-assigned MI | db_datareader, db_datawriter |
 | Worker Function &rarr; ACS | User-assigned MI | Communication and Email Service Owner |
@@ -63,17 +78,6 @@ Additional job modules can be added by implementing [IJobModuleHandler](Worker/I
 |--------|-------------|
 | **Weather Report** | Fetches forecast data from [Open-Meteo](https://open-meteo.com/) and emails a weather report |
 | **Stock Price Report** | Fetches monthly historical prices from [Alpha Vantage](https://www.alphavantage.co/) and emails a stock price report |
-
-## Solution Structure
-
-| Project | Type | Responsibility |
-|---------|------|----------------|
-| `Api/` | ASP.NET Core Web API | Accept and validate job requests, enqueue to Service Bus |
-| `Worker/` | Azure Functions (Service Bus trigger) | Execute job module logic, send notifications |
-| `Data/` | Class library | EF Core DbContext, entities, migrations |
-| `Contracts/` | Class library | Shared job module input models |
-| `Api.Tests/` | xUnit test project | Unit tests for API controllers and services using xUnit, Moq, and EF Core InMemory |
-| `Worker.Tests/` | xUnit test project | Unit tests for Worker functions, handlers, and API services using xUnit, Moq, and EF Core InMemory |
 
 ## API
 
@@ -100,7 +104,10 @@ The API on [App Service B1](https://learn.microsoft.com/en-us/azure/azure-resour
 
 [Service Bus Standard](https://azure.microsoft.com/en-us/pricing/details/service-bus/) handles throughput well out of the box (up to 13M ops per month, additional cost extra per million op). Premium plan adds dedicated capacity if needed.
 
+## Infrastructure as Code
+
+All Azure resources are defined in [infra/](infra/) using Terraform. See the [Provisioning Guide](Docs/provisioning.md) for the one-time bootstrap steps and the standard `terraform plan` / `apply` workflow.
+
 ## Roadmap
 
-- Terraform IaC
 - Azure Aspire for local dev orchestration
